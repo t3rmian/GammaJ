@@ -8,7 +8,9 @@
 
 <AnchorPane id="AnchorPane" prefHeight="200" prefWidth="320" xmlns:fx="http://javafx.com/fxml" fx:controller="com.t3r1jj.gammaj.FXMLController">
     <children>
-        <Button layoutX="126" layoutY="90" text="Click Me!" onAction="#handleButtonAction" fx:id="button" />
+        <Button layoutX="126" layoutY="90" text="Reset gamma" onAction="#handleResetButtonAction" fx:id="resetButton" />
         <Label layoutX="126" layoutY="120" minHeight="16" minWidth="69" fx:id="label" />
+        <Slider layoutX="126" layoutY="140" minWidth="69" fx:id="gammaSlider" majorTickUnit="1" min="0" max="6" showTickLabels="true" showTickMarks="true" />
+        <javafx.scene.canvas.Canvas layoutX="20"  layoutY="160"  width="256" height="256" fx:id="canvas"  />
     </children>
 </AnchorPane>

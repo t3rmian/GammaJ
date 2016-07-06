@@ -7,7 +7,7 @@ import com.sun.jna.platform.win32.WinDef.WORD;
 import java.util.Arrays;
 
 /*
- Copyright (C) year  name of author
+ Copyright (C) 2016 Damian Terlecki
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -60,6 +60,8 @@ public class Model {
         setDeviceGammaRamp();
     }
 
+    //Corrected = 255 * (Image/255)^(1/2.2).
+    //http://stackoverflow.com/questions/16521003/gamma-correction-formula-gamma-or-1-gamma
     public void setGamma(float scale) {
         short[][] newGammaRamp = new short[3][];
         for (int i = 0; i < TOTAL_COLORS_COUNT; i++) {
@@ -116,6 +118,24 @@ public class Model {
         stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
         stringBuilder.append("}");
         System.out.println(stringBuilder.toString());
+    }
+
+    public float[][] getGammaZZZZZ() {
+        float[][] gammaZZZZZ = new float[TOTAL_COLORS_COUNT][SINGLE_RAMP_COLOR_VALUES_COUNT];
+        short[][] gammaRamp = getCurrentGammaRamp();
+        for (int y = 0; y < TOTAL_COLORS_COUNT; y++) {
+            for (int x = 0; x < SINGLE_RAMP_COLOR_VALUES_COUNT; x++) {
+                float scale = 0;
+                if (gammaRamp[y][x] < 0) {
+                    scale = gammaRamp[y][x] + 65535;
+                } else {
+                    scale = gammaRamp[y][x];
+                }
+                scale /= 65535;
+                gammaZZZZZ[y][x] = scale;
+            }
+        }
+        return gammaZZZZZ;
     }
 
     private class GammaCallException extends RuntimeException {
