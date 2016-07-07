@@ -55,7 +55,7 @@ public class ModelTest {
         System.out.println("resettingGamma");
         Model instance = new Model();
 
-        instance.resetGamma();
+        instance.resetModel();
         assertThat(Model.MY_DEFAULT_GAMMA_RAMP, is(instance.getCurrentGammaRamp()));
         instance.printGammaRamp();
     }

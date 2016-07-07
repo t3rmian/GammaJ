@@ -35,30 +35,63 @@ public class FXMLController implements Initializable {
 
     private static final Model model = new Model();
 
-    float center = 3;
+    float center = 1;
 
     @FXML
     private Label label;
     @FXML
     private Slider gammaSlider;
+    @FXML
+    private Slider brightnessSlider;
+    @FXML
+    private Slider contrastSlider;
 
     @FXML
     private Canvas canvas;
+    private static final double GAMMA_SLIDER_DEFAULT_VALUE = 1;
+    private static final double BRIGHTNESS_SLIDER_DEFAULT_VALUE = 50;
+    private static final double CONTRAST_SLIDER_DEFAULT_VALUE = 50;
 
     @FXML
     private void handleResetButtonAction(ActionEvent event) {
         System.out.println("Reset button clicked!");
-        model.resetGamma();
+        model.resetModel();
+        model.resetGammaRamp();
+        resetSliders();
+        drawGammaLine();
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        gammaSlider.setValue(3);
+        gammaSlider.setValue(GAMMA_SLIDER_DEFAULT_VALUE);
         gammaSlider.valueProperty().addListener(new ChangeListener<Number>() {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                model.setGamma(newValue.floatValue() - center);
+                model.setGamma(newValue.floatValue());
+                model.calculateGammaRamp();
+                drawGammaLine();
+            }
+
+        });
+        brightnessSlider.setValue(BRIGHTNESS_SLIDER_DEFAULT_VALUE);
+        brightnessSlider.valueProperty().addListener(new ChangeListener<Number>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                model.setBrightness(newValue.floatValue() / 100f);
+                model.calculateGammaRamp();
+                drawGammaLine();
+            }
+
+        });
+        contrastSlider.setValue(CONTRAST_SLIDER_DEFAULT_VALUE);
+        contrastSlider.valueProperty().addListener(new ChangeListener<Number>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                model.setContrast((newValue.floatValue() - 50) / 50f);
+                model.calculateGammaRamp();
                 drawGammaLine();
             }
 
@@ -80,5 +113,11 @@ public class FXMLController implements Initializable {
         for (int x = 0; x < 256; x++) {
             graphicsContext.strokeLine(x, (1 - gammaZZZ[0][x]) * 256, x, (1 - gammaZZZ[0][x]) * 256);
         }
+    }
+
+    private void resetSliders() {
+        gammaSlider.setValue(GAMMA_SLIDER_DEFAULT_VALUE);
+        brightnessSlider.setValue(BRIGHTNESS_SLIDER_DEFAULT_VALUE);
+        contrastSlider.setValue(CONTRAST_SLIDER_DEFAULT_VALUE);
     }
 }
