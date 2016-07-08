@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj;
+package com.t3r1jj.gammaj.model;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import com.sun.jna.platform.win32.WinDef;
 
-public class RegistryTest {
+class Monitor extends AbstractScreen {
+    protected int id;
 
-    public RegistryTest() {
+    public Monitor(int id, WinDef.HDC hdc) {
+        this.id = id;
+        this.name = "Display " + id;
+        this.hdc = hdc;
+        this.gammaModel = new Gamma(hdc);
+    }
+    
+    public int getId() {
+        return id;
     }
 
-    /**
-     * Test of installGammaExtension method, of class GammaRegistry.
-     */
-    @Test
-    public void testInstallGammaExtension() {
-        System.out.println("installGammaExtension");
-        GammaRegistry instance = new GammaRegistry();
-        instance.installGammaExtension();
-        assertEquals(256, instance.getGammaExtensionValue());
+    @Override
+    public String toString() {
+        return name;
     }
-
 }

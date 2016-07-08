@@ -13,25 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj;
+package com.t3r1jj.gammaj.model;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import com.sun.jna.platform.win32.WinDef;
 
-public class RegistryTest {
+public interface Screen {
 
-    public RegistryTest() {
-    }
+    String getName();
+
+    WinDef.HDC getHdc();
+
+    void setGamma(float gamma);
 
     /**
-     * Test of installGammaExtension method, of class GammaRegistry.
+     *
+     * @param brightness value from 0f...1f range, 0.5 = no change
      */
-    @Test
-    public void testInstallGammaExtension() {
-        System.out.println("installGammaExtension");
-        GammaRegistry instance = new GammaRegistry();
-        instance.installGammaExtension();
-        assertEquals(256, instance.getGammaExtensionValue());
-    }
+    void setBrightness(float brightness);
 
+    /**
+     *
+     * @param contrast value from -1f...1f range, 0 = no change
+     */
+    void setContrast(float contrast);
+
+    void resetGammaRamp();
+
+    void reinitialize();
+
+    float[][] getGammaRamp();
+    
 }

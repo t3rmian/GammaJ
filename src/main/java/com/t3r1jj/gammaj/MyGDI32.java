@@ -1,3 +1,18 @@
+/* 
+ * Copyright 2016 Damian Terlecki.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.t3r1jj.gammaj;
 
 import com.sun.jna.Native;
@@ -7,24 +22,7 @@ import com.sun.jna.platform.win32.WinDef.HDC;
 import com.sun.jna.platform.win32.WinDef.WORD;
 import com.sun.jna.win32.W32APIOptions;
 
-/*
- Copyright (C) 2016 Damian Terlecki
-
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2.1 of the License, or (at your option) any later version.
-
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
-public interface MyGDI32 extends GDI32{
+public interface MyGDI32 extends GDI32 {
 
     // GNU/Linux??
     MyGDI32 INSTANCE = (MyGDI32) Native.loadLibrary("GDI32", MyGDI32.class, W32APIOptions.DEFAULT_OPTIONS);
@@ -38,5 +36,12 @@ public interface MyGDI32 extends GDI32{
             HDC hDC,
             WORD[] lpRamp
     );
-    
+
+    HDC CreateDC(
+            String lpszDriver,
+            String lpszDevice,
+            String lpszOutput,
+            Void lpInitData
+    );
+
 }

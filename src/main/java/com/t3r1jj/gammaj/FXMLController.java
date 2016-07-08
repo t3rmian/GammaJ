@@ -1,6 +1,25 @@
+/* 
+ * Copyright 2016 Damian Terlecki.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.t3r1jj.gammaj;
 
+import com.t3r1jj.gammaj.model.Screen;
+import com.t3r1jj.gammaj.model.WholeScreen;
+import com.t3r1jj.gammaj.model.ScreenUtil;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -9,36 +28,17 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 
-/*
- Copyright (C) 2016 Damian Terlecki
-
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2.1 of the License, or (at your option) any later version.
-
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
 public class FXMLController implements Initializable {
 
-    private static final Model model = new Model();
-
-    float center = 1;
-
+    private Screen currentScreen;
+    
     @FXML
-    private Label label;
+    private ComboBox<Screen> screenComboBox;
     @FXML
     private Slider gammaSlider;
     @FXML
@@ -57,21 +57,39 @@ public class FXMLController implements Initializable {
     @FXML
     private void handleResetButtonAction(ActionEvent event) {
         System.out.println("Reset button clicked!");
-        model.resetModel();
-        model.resetGammaRamp();
+        currentScreen.resetGammaRamp();
         resetSliders();
         drawGammaLine();
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        ScreenUtil screenUtil = new ScreenUtil();
+        WholeScreen wholeScreen = screenUtil.getWholeScreen();
+        List<Screen> screens = wholeScreen.getScreens();
+        screenComboBox.getItems().add(wholeScreen);
+        screenComboBox.getItems().addAll(screens);
+        currentScreen = wholeScreen;
+        screenComboBox.getSelectionModel().select(currentScreen);
+        
+        screenComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Screen>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Screen> observable, Screen oldValue, Screen newValue) {
+                currentScreen = newValue;
+                currentScreen.reinitialize();
+                drawGammaLine();
+            }
+
+        });
+
         gammaSlider.setValue(GAMMA_SLIDER_DEFAULT_VALUE);
         gammaSlider.valueProperty().addListener(new ChangeListener<Number>() {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                model.setGamma(newValue.floatValue());
-                model.calculateGammaRamp();
+                currentScreen.setGamma(newValue.floatValue());
+                currentScreen.reinitialize();
                 drawGammaLine();
             }
 
@@ -81,8 +99,8 @@ public class FXMLController implements Initializable {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                model.setBrightness(newValue.floatValue() / 100f);
-                model.calculateGammaRamp();
+                currentScreen.setBrightness(newValue.floatValue() / 100f);
+                currentScreen.reinitialize();
                 drawGammaLine();
             }
 
@@ -92,8 +110,8 @@ public class FXMLController implements Initializable {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                model.setContrast((newValue.floatValue() - 50) / 50f);
-                model.calculateGammaRamp();
+                currentScreen.setContrast((newValue.floatValue() - 50) / 50f);
+                currentScreen.reinitialize();
                 drawGammaLine();
             }
 
@@ -110,10 +128,10 @@ public class FXMLController implements Initializable {
 
         graphicsContext.setStroke(GAMMA_CANVAS_LINE_COLOR);
         graphicsContext.setLineWidth(1);
-        float[][] gammaZZZ = model.getGammaZZZZZ();
-        graphicsContext.strokeLine(0, (1 - gammaZZZ[0][0]) * canvas.getWidth(), 0, (1 - gammaZZZ[0][0]) * canvas.getWidth());
+        float[][] gammaRamp = currentScreen.getGammaRamp();
+        graphicsContext.strokeLine(0, (1 - gammaRamp[0][0]) * canvas.getWidth(), 0, (1 - gammaRamp[0][0]) * canvas.getWidth());
         for (int x = 1; x < canvas.getWidth(); x++) {
-            graphicsContext.strokeLine(x - 1, (1 - gammaZZZ[0][x-1]) * canvas.getWidth(), x, (1 - gammaZZZ[0][x]) * canvas.getWidth());
+            graphicsContext.strokeLine(x - 1, (1 - gammaRamp[0][x - 1]) * canvas.getWidth(), x, (1 - gammaRamp[0][x]) * canvas.getWidth());
         }
     }
 

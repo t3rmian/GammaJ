@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2016 Damian Terlecki.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.canvas.*?>
@@ -15,10 +30,11 @@
         <Slider fx:id="gammaSlider" layoutX="174.0" layoutY="372.0" majorTickUnit="1" max="6" min="-4" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" stylesheets="@../styles/Styles.css" />
         <Slider fx:id="brightnessSlider" layoutX="174.0" layoutY="402.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
         <Slider fx:id="contrastSlider" layoutX="174.0" layoutY="432.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
-      <Pane fx:id="canvasPane" layoutX="116.0" layoutY="14.0" styleClass="canvasPane">
-         <children>
-              <Canvas fx:id="canvas" height="256" nodeOrientation="INHERIT" styleClass="canvas" width="256" />
-         </children>
-      </Pane>
+        <Pane fx:id="canvasPane" layoutX="115.0" layoutY="71.0" styleClass="canvasPane">
+            <children>
+                <Canvas fx:id="canvas" height="256" nodeOrientation="INHERIT" styleClass="canvas" width="256" />
+            </children>
+        </Pane>
+        <ComboBox fx:id="screenComboBox" layoutX="169.0" layoutY="27.0" prefWidth="150.0" />
     </children>
 </AnchorPane>
