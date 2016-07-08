@@ -4,7 +4,6 @@ import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinDef.BOOL;
 import com.sun.jna.platform.win32.WinDef.WORD;
-import java.util.Arrays;
 
 /*
  Copyright (C) 2016 Damian Terlecki
@@ -49,7 +48,7 @@ public class Model {
         WinDef.HDC deviceContext = User32.INSTANCE.GetDC(null);
         BOOL success = MyGDI32.INSTANCE.GetDeviceGammaRamp(deviceContext, gammaRamp);
         if (!success.booleanValue()) {
-            throw new GammaCallException();
+//            throw new GammaCallException();
         }
     }
 
@@ -66,7 +65,7 @@ public class Model {
         brightness = DEFAULT_BRIGHTNESS;
         contrast = DEFAULT_CONTRAST;
     }
-    
+
     public void resetGammaRamp() {
         setGammaRamp(MY_DEFAULT_GAMMA_RAMP);
         setDeviceGammaRamp();
@@ -93,8 +92,8 @@ public class Model {
     }
 
     public void calculateGammaRamp() {
-        int brightnessIncrement = (int) ((brightness*2 - 1f) * MAX_WORD);
-        float contrastLevel = contrast*255;
+        int brightnessIncrement = (int) ((brightness * 2 - 1f) * MAX_WORD);
+        float contrastLevel = contrast * 255;
         float contrastFactor = 259 * (contrastLevel + 255) / (255 * (259 - contrastLevel));
         int[][] newGammaRamp = new int[TOTAL_COLORS_COUNT][SINGLE_RAMP_COLOR_VALUES_COUNT];
         for (int y = 0; y < newGammaRamp.length; y++) {

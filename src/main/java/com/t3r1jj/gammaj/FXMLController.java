@@ -1,7 +1,6 @@
 package com.t3r1jj.gammaj;
 
 import java.net.URL;
-import java.util.Arrays;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -13,6 +12,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 
 /*
  Copyright (C) 2016 Damian Terlecki
@@ -51,6 +51,8 @@ public class FXMLController implements Initializable {
     private static final double GAMMA_SLIDER_DEFAULT_VALUE = 1;
     private static final double BRIGHTNESS_SLIDER_DEFAULT_VALUE = 50;
     private static final double CONTRAST_SLIDER_DEFAULT_VALUE = 50;
+    private static final Paint GAMMA_CANVAS_BACKGROUND_COLOR = Color.WHITE;
+    private static final Paint GAMMA_CANVAS_LINE_COLOR = Color.BLACK;
 
     @FXML
     private void handleResetButtonAction(ActionEvent event) {
@@ -103,15 +105,15 @@ public class FXMLController implements Initializable {
 
     private void drawGammaLine() {
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
-        graphicsContext.setFill(Color.RED);
-        graphicsContext.fillRect(0, 0, 256, 256);
+        graphicsContext.setFill(GAMMA_CANVAS_BACKGROUND_COLOR);
+        graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        graphicsContext.setStroke(Color.BLUE);
-        graphicsContext.setFill(Color.GREEN);
-        graphicsContext.setLineWidth(2);
+        graphicsContext.setStroke(GAMMA_CANVAS_LINE_COLOR);
+        graphicsContext.setLineWidth(1);
         float[][] gammaZZZ = model.getGammaZZZZZ();
-        for (int x = 0; x < 256; x++) {
-            graphicsContext.strokeLine(x, (1 - gammaZZZ[0][x]) * 256, x, (1 - gammaZZZ[0][x]) * 256);
+        graphicsContext.strokeLine(0, (1 - gammaZZZ[0][0]) * canvas.getWidth(), 0, (1 - gammaZZZ[0][0]) * canvas.getWidth());
+        for (int x = 1; x < canvas.getWidth(); x++) {
+            graphicsContext.strokeLine(x - 1, (1 - gammaZZZ[0][x-1]) * canvas.getWidth(), x, (1 - gammaZZZ[0][x]) * canvas.getWidth());
         }
     }
 
@@ -120,4 +122,5 @@ public class FXMLController implements Initializable {
         brightnessSlider.setValue(BRIGHTNESS_SLIDER_DEFAULT_VALUE);
         contrastSlider.setValue(CONTRAST_SLIDER_DEFAULT_VALUE);
     }
+
 }

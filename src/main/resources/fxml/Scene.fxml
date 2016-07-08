@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.canvas.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="200" prefWidth="320" xmlns:fx="http://javafx.com/fxml" fx:controller="com.t3r1jj.gammaj.FXMLController">
+<AnchorPane id="AnchorPane" prefHeight="570.0" prefWidth="487.0" styleClass="root" stylesheets="@../styles/Styles.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.t3r1jj.gammaj.FXMLController">
     <children>
-        <Button layoutX="126" layoutY="90" text="Reset gamma" onAction="#handleResetButtonAction" fx:id="resetButton" />
-        <Label layoutX="126" layoutY="120" minHeight="16" minWidth="69" fx:id="label" />
-        <Slider layoutX="126" layoutY="140" minWidth="69" fx:id="gammaSlider" majorTickUnit="1" min="-4" max="6" showTickLabels="true" showTickMarks="true" />
-        <Slider layoutX="126" layoutY="170" minWidth="69" fx:id="brightnessSlider" majorTickUnit="25" min="0" max="100" showTickLabels="true" showTickMarks="true" />
-        <Slider layoutX="126" layoutY="200" minWidth="69" fx:id="contrastSlider" majorTickUnit="25" min="0" max="100" showTickLabels="true" showTickMarks="true" />
-        <javafx.scene.canvas.Canvas layoutX="20"  layoutY="260"  width="256" height="256" fx:id="canvas"  />
+        <Button fx:id="resetButton" layoutX="197.0" layoutY="485.0" onAction="#handleResetButtonAction" styleClass="buttonClass" text="Reset gamma" />
+        <Label fx:id="label" layoutX="174.0" layoutY="352.0" minHeight="16" minWidth="69" />
+        <Slider fx:id="gammaSlider" layoutX="174.0" layoutY="372.0" majorTickUnit="1" max="6" min="-4" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" stylesheets="@../styles/Styles.css" />
+        <Slider fx:id="brightnessSlider" layoutX="174.0" layoutY="402.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
+        <Slider fx:id="contrastSlider" layoutX="174.0" layoutY="432.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
+      <Pane fx:id="canvasPane" layoutX="116.0" layoutY="14.0" styleClass="canvasPane">
+         <children>
+              <Canvas fx:id="canvas" height="256" nodeOrientation="INHERIT" styleClass="canvas" width="256" />
+         </children>
+      </Pane>
     </children>
 </AnchorPane>

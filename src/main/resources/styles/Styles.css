@@ -1,3 +1,23 @@
+.root {
+    -fx-background-color: #3C3C3C;
+    default-text-color: #FFFFFF;
+}
+
+.canvasPane {
+    -fx-background-color: gray;
+    -fx-background-insets: -2, 2, 2, -2 ;
+}
+
 .button {
+    -fx-text-fill: default-text-color;
+    -fx-font-family: "Arial Narrow";
     -fx-font-weight: bold;
+    -fx-background-color: linear-gradient(#61a2b1, #2A5058);
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 5, 0.0 , 0 , 1 );
+}
+
+.slider .axis {
+    -fx-tick-mark-stroke: ladder(-fx-background, derive(-fx-background,30%) 40%, derive(-fx-background,-30%) 41%);
+    -fx-tick-label-font: 0.833333em System; 
+    -fx-tick-label-fill: default-text-color;
 }
