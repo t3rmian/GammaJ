@@ -7,17 +7,30 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>GammaJ</name>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mainClass>com.t3r1jj.gammaj.MainApp</mainClass>
+        <developer-url>https://T3r1jj.github.io</developer-url>
+        <developer-email>T3r1jj@gmail.com</developer-email>
     </properties>
 
-    <organization>
-        <!-- Used as the 'Vendor' for JNLP generation -->
-        <name>Your Organisation</name>
-    </organization>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <name>GammaJ</name>
+    <description>Display gamma correction tool</description>
+    <url>https://github.com/T3r1jj/GammaJ</url>
+    <inceptionYear>>2016</inceptionYear>
+    <developers>
+        <developer>
+            <name>Damian Terlecki</name>
+            <url>${developer-email}</url>
+            <id>T3r1jj</id>
+        </developer>
+    </developers>
 
     <build>
         <plugins>
@@ -103,6 +116,13 @@
                 </configuration>
             </plugin>
         </plugins>
+        
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
     </build>
 
 
