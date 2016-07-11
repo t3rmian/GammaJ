@@ -17,7 +17,7 @@ package io.github.t3r1jj.gammaj.model;
 
 import com.sun.jna.platform.win32.WinDef;
 
-public interface Screen {
+public interface Display {
 
     String getName();
 

@@ -19,27 +19,27 @@ import com.sun.jna.platform.win32.WinDef.HDC;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WholeScreen extends AbstractScreen {
+public class MultiDisplay extends AbstractDisplay {
 
-    private List<Screen> screens = new ArrayList<>();
+    private List<Display> screens = new ArrayList<>();
 
-    public WholeScreen(HDC hdc) {
+    public MultiDisplay(HDC hdc) {
         super(hdc);
         name = "Whole screen";
     }
 
-    public void addScreen(Screen screen) {
+    public void addScreen(Display screen) {
         screens.add(screen);
     }
 
-    public List<Screen> getScreens() {
+    public List<Display> getScreens() {
         return screens;
     }
 
     @Override
     public void resetGammaRamp() {
         super.resetGammaRamp();
-        for (Screen screen : screens) {
+        for (Display screen : screens) {
             screen.resetGammaRamp();
         }
     }
@@ -47,7 +47,7 @@ public class WholeScreen extends AbstractScreen {
     @Override
     public void setContrast(Gamma.Channel channel, double contrast) {
         super.setContrast(channel, contrast);
-        for (Screen screen : screens) {
+        for (Display screen : screens) {
             screen.setContrast(channel, contrast);
         }
     }
@@ -55,7 +55,7 @@ public class WholeScreen extends AbstractScreen {
     @Override
     public void setContrastGain(Gamma.Channel channel, double contrastGain) {
         super.setContrastGain(channel, contrastGain);
-        for (Screen screen : screens) {
+        for (Display screen : screens) {
             screen.setContrastGain(channel, contrastGain);
         }
     }
@@ -63,7 +63,7 @@ public class WholeScreen extends AbstractScreen {
     @Override
     public void setBrightness(Gamma.Channel channel, double brightness) {
         super.setBrightness(channel, brightness);
-        for (Screen screen : screens) {
+        for (Display screen : screens) {
             screen.setBrightness(channel, brightness);
         }
     }
@@ -71,7 +71,7 @@ public class WholeScreen extends AbstractScreen {
     @Override
     public void setGamma(Gamma.Channel channel, double gamma) {
         super.setGamma(channel, gamma);
-        for (Screen screen : screens) {
+        for (Display screen : screens) {
             screen.setGamma(channel, gamma);
         }
     }
@@ -79,7 +79,7 @@ public class WholeScreen extends AbstractScreen {
     @Override
     public void setTemperature(ColorTemperature temperature) {
         super.setTemperature(temperature);
-        for (Screen screen : screens) {
+        for (Display screen : screens) {
             screen.setTemperature(temperature);
         }
     }

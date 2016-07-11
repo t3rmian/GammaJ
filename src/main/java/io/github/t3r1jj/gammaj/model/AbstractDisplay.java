@@ -18,16 +18,16 @@ package io.github.t3r1jj.gammaj.model;
 import com.sun.jna.platform.win32.WinDef;
 import io.github.t3r1jj.gammaj.model.Gamma.Channel;
 
-public abstract class AbstractScreen implements Screen {
+public abstract class AbstractDisplay implements Display {
 
     protected String name;
     protected WinDef.HDC hdc;
     protected Gamma gammaModel;
 
-    protected AbstractScreen() {
+    protected AbstractDisplay() {
     }
 
-    public AbstractScreen(WinDef.HDC hdc) {
+    public AbstractDisplay(WinDef.HDC hdc) {
         this.hdc = hdc;
         this.gammaModel = new Gamma(hdc);
     }

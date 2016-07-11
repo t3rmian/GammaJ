@@ -17,9 +17,9 @@ package io.github.t3r1jj.gammaj;
 
 import io.github.t3r1jj.gammaj.model.ColorTemperature;
 import io.github.t3r1jj.gammaj.model.Gamma.Channel;
-import io.github.t3r1jj.gammaj.model.Screen;
-import io.github.t3r1jj.gammaj.model.ScreenUtil;
-import io.github.t3r1jj.gammaj.model.WholeScreen;
+import io.github.t3r1jj.gammaj.model.Display;
+import io.github.t3r1jj.gammaj.model.DisplayUtil;
+import io.github.t3r1jj.gammaj.model.MultiDisplay;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -37,10 +37,10 @@ import javafx.scene.paint.Paint;
 
 public class FXMLController implements Initializable {
 
-    private Screen currentScreen;
+    private Display currentScreen;
 
     @FXML
-    private ComboBox<Screen> screenComboBox;
+    private ComboBox<Display> screenComboBox;
     @FXML
     private Slider gammaSlider;
     @FXML
@@ -72,18 +72,18 @@ public class FXMLController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        ScreenUtil screenUtil = new ScreenUtil();
-        WholeScreen wholeScreen = screenUtil.getWholeScreen();
-        List<Screen> screens = wholeScreen.getScreens();
+        DisplayUtil screenUtil = new DisplayUtil();
+        MultiDisplay wholeScreen = screenUtil.getWholeScreen();
+        List<Display> screens = wholeScreen.getScreens();
         screenComboBox.getItems().add(wholeScreen);
         screenComboBox.getItems().addAll(screens);
         currentScreen = wholeScreen;
         screenComboBox.getSelectionModel().select(currentScreen);
 
-        screenComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Screen>() {
+        screenComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Display>() {
 
             @Override
-            public void changed(ObservableValue<? extends Screen> observable, Screen oldValue, Screen newValue) {
+            public void changed(ObservableValue<? extends Display> observable, Display oldValue, Display newValue) {
                 currentScreen = newValue;
                 currentScreen.reinitialize();
                 drawGammaLine();

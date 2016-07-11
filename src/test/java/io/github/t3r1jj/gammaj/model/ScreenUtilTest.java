@@ -15,8 +15,8 @@
  */
 package io.github.t3r1jj.gammaj.model;
 
-import io.github.t3r1jj.gammaj.model.ScreenUtil;
-import io.github.t3r1jj.gammaj.model.Monitor;
+import io.github.t3r1jj.gammaj.model.DisplayUtil;
+import io.github.t3r1jj.gammaj.model.SingleDisplay;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -26,27 +26,27 @@ public class ScreenUtilTest {
     }
 
     /**
-     * Test of getMonitorsCount method, of class ScreenUtil.
+     * Test of getMonitorsCount method, of class DisplayUtil.
      */
     @Test
     public void testGetMonitorsCount() {
         System.out.println("getMonitorsCount");
-        ScreenUtil instance = new ScreenUtil();
+        DisplayUtil instance = new DisplayUtil();
         int expResult = 0;
         int result = instance.getMonitorsCount();
         assertTrue(expResult != result);
     }
 
     /**
-     * Test of getMonitor method, of class ScreenUtil.
+     * Test of getMonitor method, of class DisplayUtil.
      */
     @Test
     public void testGetMonitor() {
         System.out.println("getMonitor");
         int id = 0;
-        ScreenUtil instance = new ScreenUtil();
-        Monitor expResult = null;
-        Monitor result = instance.getMonitor(id);
+        DisplayUtil instance = new DisplayUtil();
+        SingleDisplay expResult = null;
+        SingleDisplay result = instance.getMonitor(id);
     }
 
 }

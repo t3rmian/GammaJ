@@ -17,10 +17,10 @@ package io.github.t3r1jj.gammaj.model;
 
 import com.sun.jna.platform.win32.WinDef;
 
-class Monitor extends AbstractScreen {
+class SingleDisplay extends AbstractDisplay {
     protected int id;
 
-    public Monitor(int id, WinDef.HDC hdc) {
+    public SingleDisplay(int id, WinDef.HDC hdc) {
         this.id = id;
         this.name = "Display " + id;
         this.hdc = hdc;

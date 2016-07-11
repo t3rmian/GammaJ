@@ -22,7 +22,7 @@ import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.platform.win32.WinUser.MONITORENUMPROC;
 import io.github.t3r1jj.gammaj.MyGDI32;
 
-public class ScreenUtil {
+public class DisplayUtil {
 
     private int monitorsCount = 0;
 
@@ -40,18 +40,18 @@ public class ScreenUtil {
         return monitorsCount;
     }
 
-    public Monitor getMonitor(int id) {
+    public SingleDisplay getMonitor(int id) {
         String lpszDriver = "\\\\.\\DISPLAY" + id;
         String lpszDevice = lpszDriver;
         HDC hdc = MyGDI32.INSTANCE.CreateDC(lpszDriver, lpszDriver, null, null);
-        Monitor monitor = new Monitor(id, hdc);
+        SingleDisplay monitor = new SingleDisplay(id, hdc);
         return monitor;
     }
 
-    public WholeScreen getWholeScreen() {
+    public MultiDisplay getWholeScreen() {
         String lpszDriver = "DISPLAY";
         HDC hdc = MyGDI32.INSTANCE.CreateDC(lpszDriver, null, null, null);
-        WholeScreen screen = new WholeScreen(hdc);
+        MultiDisplay screen = new MultiDisplay(hdc);
         int count = getMonitorsCount();
         for (int i = 1; i <= count; i++) {
             screen.addScreen(getMonitor(i));
