@@ -45,26 +45,34 @@ public class WholeScreen extends AbstractScreen {
     }
 
     @Override
-    public void setContrast(float contrast) {
-        super.setContrast(contrast);
+    public void setContrast(Gamma.Channel channel, double contrast) {
+        super.setContrast(channel, contrast);
         for (Screen screen : screens) {
-            screen.setContrast(contrast);
+            screen.setContrast(channel, contrast);
         }
     }
 
     @Override
-    public void setBrightness(float brightness) {
-        super.setBrightness(brightness);
+    public void setBrightness(Gamma.Channel channel, double brightness) {
+        super.setBrightness(channel, brightness);
         for (Screen screen : screens) {
-            screen.setBrightness(brightness);
+            screen.setBrightness(channel, brightness);
         }
     }
 
     @Override
-    public void setGamma(float gamma) {
-        super.setGamma(gamma);
+    public void setGamma(Gamma.Channel channel, double gamma) {
+        super.setGamma(channel, gamma);
         for (Screen screen : screens) {
-            screen.setGamma(gamma);
+            screen.setGamma(channel, gamma);
+        }
+    }
+
+    @Override
+    public void setTemperature(ColorTemperature temperature) {
+        super.setTemperature(temperature);
+        for (Screen screen : screens) {
+            screen.setTemperature(temperature);
         }
     }
 

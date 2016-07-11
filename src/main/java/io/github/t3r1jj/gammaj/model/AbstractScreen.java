@@ -16,6 +16,7 @@
 package io.github.t3r1jj.gammaj.model;
 
 import com.sun.jna.platform.win32.WinDef;
+import io.github.t3r1jj.gammaj.model.Gamma.Channel;
 
 public abstract class AbstractScreen implements Screen {
 
@@ -42,18 +43,23 @@ public abstract class AbstractScreen implements Screen {
     }
 
     @Override
-    public void setGamma(float gamma) {
-        gammaModel.gamma = gamma;
+    public void setGamma(Channel channel, double gamma) {
+        gammaModel.gamma[channel.getIndex()] = gamma;
     }
 
     @Override
-    public void setBrightness(float brightness) {
-        gammaModel.brightness = brightness;
+    public void setBrightness(Channel channel, double brightness) {
+        gammaModel.brightness[channel.getIndex()] = brightness;
     }
 
     @Override
-    public void setContrast(float contrast) {
-        gammaModel.contrast = contrast;
+    public void setContrast(Channel channel, double contrast) {
+        gammaModel.contrast[channel.getIndex()] = contrast;
+    }
+
+    @Override
+    public void setTemperature(ColorTemperature colorTemperature) {
+        gammaModel.temperature = colorTemperature.getRgb();
     }
 
     @Override
@@ -67,7 +73,7 @@ public abstract class AbstractScreen implements Screen {
     }
 
     @Override
-    public float[][] getGammaRamp() {
+    public double[][] getGammaRamp() {
         return gammaModel.getGammaScaledRamp();
     }
 

@@ -21,3 +21,7 @@
     -fx-tick-label-font: 0.833333em System; 
     -fx-tick-label-fill: default-text-color;
 }
+
+.versionLabel {
+    -fx-text-fill: default-text-color;
+}

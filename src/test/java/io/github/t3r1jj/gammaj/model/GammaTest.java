@@ -15,11 +15,8 @@
  */
 package io.github.t3r1jj.gammaj.model;
 
-import io.github.t3r1jj.gammaj.model.Gamma;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef.HDC;
-import com.sun.jna.platform.win32.WinDef.WORD;
-import java.util.Arrays;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -61,7 +58,7 @@ public class GammaTest {
 
     @org.junit.Test
     public void testReinitializeGammaRamp() {
-        instance.gamma = 1.5f;
+        instance.gamma[0] = 1.5f;
         instance.reinitializeGammaRamp();
         assertThat(Gamma.DEFAULT_GAMMA_RAMP, is(not(equalTo(instance.getGammaRamp()))));
     }

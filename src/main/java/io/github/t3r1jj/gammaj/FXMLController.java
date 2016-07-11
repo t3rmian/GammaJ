@@ -15,7 +15,8 @@
  */
 package io.github.t3r1jj.gammaj;
 
-
+import io.github.t3r1jj.gammaj.model.ColorTemperature;
+import io.github.t3r1jj.gammaj.model.Gamma.Channel;
 import io.github.t3r1jj.gammaj.model.Screen;
 import io.github.t3r1jj.gammaj.model.ScreenUtil;
 import io.github.t3r1jj.gammaj.model.WholeScreen;
@@ -37,7 +38,7 @@ import javafx.scene.paint.Paint;
 public class FXMLController implements Initializable {
 
     private Screen currentScreen;
-    
+
     @FXML
     private ComboBox<Screen> screenComboBox;
     @FXML
@@ -46,6 +47,8 @@ public class FXMLController implements Initializable {
     private Slider brightnessSlider;
     @FXML
     private Slider contrastSlider;
+    @FXML
+    private Slider temperatureSlider;
 
     @FXML
     private Canvas canvas;
@@ -53,7 +56,8 @@ public class FXMLController implements Initializable {
     private static final double BRIGHTNESS_SLIDER_DEFAULT_VALUE = 50;
     private static final double CONTRAST_SLIDER_DEFAULT_VALUE = 50;
     private static final Paint GAMMA_CANVAS_BACKGROUND_COLOR = Color.WHITE;
-    private static final Paint GAMMA_CANVAS_LINE_COLOR = Color.BLACK;
+    private static final Paint[] GAMMA_CANVAS_LINE_COLOR = new Paint[]{Color.RED, Color.GREEN, Color.BLUE};
+    private static final double TEMPERATURE_SLIDER_DEFAULT_VALUE = 6500;
 
     @FXML
     private void handleResetButtonAction(ActionEvent event) {
@@ -72,7 +76,7 @@ public class FXMLController implements Initializable {
         screenComboBox.getItems().addAll(screens);
         currentScreen = wholeScreen;
         screenComboBox.getSelectionModel().select(currentScreen);
-        
+
         screenComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Screen>() {
 
             @Override
@@ -89,7 +93,7 @@ public class FXMLController implements Initializable {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                currentScreen.setGamma(newValue.floatValue());
+                currentScreen.setGamma(Channel.RED, newValue.doubleValue());
                 currentScreen.reinitialize();
                 drawGammaLine();
             }
@@ -100,7 +104,7 @@ public class FXMLController implements Initializable {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                currentScreen.setBrightness(newValue.floatValue() / 100f);
+                currentScreen.setBrightness(Channel.RED, newValue.doubleValue() / 100f);
                 currentScreen.reinitialize();
                 drawGammaLine();
             }
@@ -111,9 +115,21 @@ public class FXMLController implements Initializable {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                currentScreen.setContrast((newValue.floatValue() - 50) / 50f);
+                currentScreen.setContrast(Channel.RED, (newValue.doubleValue() - 50) / 50f);
                 currentScreen.reinitialize();
                 drawGammaLine();
+            }
+
+        });
+        temperatureSlider.setValue(TEMPERATURE_SLIDER_DEFAULT_VALUE);
+        temperatureSlider.valueProperty().addListener(new ChangeListener<Number>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                currentScreen.setTemperature(new ColorTemperature(newValue.doubleValue()));
+                currentScreen.reinitialize();
+                drawGammaLine();
+                System.out.println(newValue.doubleValue());
             }
 
         });
@@ -127,12 +143,14 @@ public class FXMLController implements Initializable {
         graphicsContext.setFill(GAMMA_CANVAS_BACKGROUND_COLOR);
         graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        graphicsContext.setStroke(GAMMA_CANVAS_LINE_COLOR);
         graphicsContext.setLineWidth(1);
-        float[][] gammaRamp = currentScreen.getGammaRamp();
-        graphicsContext.strokeLine(0, (1 - gammaRamp[0][0]) * canvas.getWidth(), 0, (1 - gammaRamp[0][0]) * canvas.getWidth());
-        for (int x = 1; x < canvas.getWidth(); x++) {
-            graphicsContext.strokeLine(x - 1, (1 - gammaRamp[0][x - 1]) * canvas.getWidth(), x, (1 - gammaRamp[0][x]) * canvas.getWidth());
+        double[][] gammaRamp = currentScreen.getGammaRamp();
+        for (int i = 0; i < gammaRamp.length; i++) {
+            graphicsContext.setStroke(GAMMA_CANVAS_LINE_COLOR[i]);
+            graphicsContext.strokeLine(0, (1 - gammaRamp[i][0]) * canvas.getWidth(), 0, (1 - gammaRamp[i][0]) * canvas.getWidth());
+            for (int x = 1; x < canvas.getWidth(); x++) {
+                graphicsContext.strokeLine(x - 1, (1 - gammaRamp[i][x - 1]) * canvas.getWidth(), x, (1 - gammaRamp[i][x]) * canvas.getWidth());
+            }
         }
     }
 
@@ -140,6 +158,7 @@ public class FXMLController implements Initializable {
         gammaSlider.setValue(GAMMA_SLIDER_DEFAULT_VALUE);
         brightnessSlider.setValue(BRIGHTNESS_SLIDER_DEFAULT_VALUE);
         contrastSlider.setValue(CONTRAST_SLIDER_DEFAULT_VALUE);
+        temperatureSlider.setValue(TEMPERATURE_SLIDER_DEFAULT_VALUE);
     }
 
 }
