@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj;
+package io.github.t3r1jj.gammaj;
 
-import com.t3r1jj.gammaj.model.Screen;
-import com.t3r1jj.gammaj.model.WholeScreen;
-import com.t3r1jj.gammaj.model.ScreenUtil;
+
+import io.github.t3r1jj.gammaj.model.Screen;
+import io.github.t3r1jj.gammaj.model.ScreenUtil;
+import io.github.t3r1jj.gammaj.model.WholeScreen;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;

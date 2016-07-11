@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj.model;
+package io.github.t3r1jj.gammaj.model;
 
+import io.github.t3r1jj.gammaj.model.ScreenUtil;
+import io.github.t3r1jj.gammaj.model.Monitor;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

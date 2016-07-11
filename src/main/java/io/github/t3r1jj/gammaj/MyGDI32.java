@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj;
+package io.github.t3r1jj.gammaj;
 
 import com.sun.jna.Native;
 import com.sun.jna.platform.win32.GDI32;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj.model;
+package io.github.t3r1jj.gammaj.model;
 
 import com.sun.jna.platform.win32.WinDef.HDC;
 import java.util.ArrayList;

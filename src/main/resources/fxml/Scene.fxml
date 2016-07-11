@@ -23,7 +23,7 @@ limitations under the License.
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="570.0" prefWidth="487.0" styleClass="root" stylesheets="@../styles/Styles.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.t3r1jj.gammaj.FXMLController">
+<AnchorPane id="AnchorPane" prefHeight="570.0" prefWidth="487.0" styleClass="root" stylesheets="@../styles/Styles.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.t3r1jj.gammaj.FXMLController">
     <children>
         <Button fx:id="resetButton" layoutX="197.0" layoutY="485.0" onAction="#handleResetButtonAction" styleClass="buttonClass" text="Reset gamma" />
         <Label fx:id="label" layoutX="174.0" layoutY="352.0" minHeight="16" minWidth="69" />

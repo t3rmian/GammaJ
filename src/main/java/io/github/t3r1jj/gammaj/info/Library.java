@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj;
+package io.github.t3r1jj.gammaj.info;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+public class Library {
 
-public class RegistryTest {
+    public final String name;
+    public final String licenseShort;
+    public final String licenseLong;
+    public final String url;
+    public final String version;
 
-    public RegistryTest() {
+    public Library(String name, String licenseShort, String licenseLong, String url, String version) {
+        this.name = name;
+        this.licenseShort = licenseShort;
+        this.licenseLong = licenseLong;
+        this.url = url;
+        this.version = version;
     }
-
-    /**
-     * Test of installGammaExtension method, of class GammaRegistry.
-     */
-    @Test
-    public void testInstallGammaExtension() {
-        System.out.println("installGammaExtension");
-        GammaRegistry instance = new GammaRegistry();
-        instance.installGammaExtension();
-        assertEquals(256, instance.getGammaExtensionValue());
-    }
+    
+    
 
 }

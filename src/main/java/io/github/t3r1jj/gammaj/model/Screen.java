@@ -13,26 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj.model;
+package io.github.t3r1jj.gammaj.model;
 
 import com.sun.jna.platform.win32.WinDef;
 
-class Monitor extends AbstractScreen {
-    protected int id;
+public interface Screen {
 
-    public Monitor(int id, WinDef.HDC hdc) {
-        this.id = id;
-        this.name = "Display " + id;
-        this.hdc = hdc;
-        this.gammaModel = new Gamma(hdc);
-    }
+    String getName();
+
+    WinDef.HDC getHdc();
+
+    void setGamma(float gamma);
+
+    /**
+     *
+     * @param brightness value from 0f...1f range, 0.5 = no change
+     */
+    void setBrightness(float brightness);
+
+    /**
+     *
+     * @param contrast value from -1f...1f range, 0 = no change
+     */
+    void setContrast(float contrast);
+
+    void resetGammaRamp();
+
+    void reinitialize();
+
+    float[][] getGammaRamp();
     
-    public int getId() {
-        return id;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
 }

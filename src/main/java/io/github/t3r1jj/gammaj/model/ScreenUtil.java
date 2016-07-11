@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj.model;
+package io.github.t3r1jj.gammaj.model;
 
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinDef.HDC;
 import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.platform.win32.WinUser.MONITORENUMPROC;
-import com.t3r1jj.gammaj.MyGDI32;
+import io.github.t3r1jj.gammaj.MyGDI32;
 
 public class ScreenUtil {
 

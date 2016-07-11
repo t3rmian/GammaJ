@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj.info;
+package io.github.t3r1jj.gammaj.info;
 
-import com.t3r1jj.gammaj.info.ProjectInfo;
+import io.github.t3r1jj.gammaj.info.ProjectInfo;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.Before;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj.info;
+package io.github.t3r1jj.gammaj.info;
 
 import java.util.ArrayList;
 import java.util.List;

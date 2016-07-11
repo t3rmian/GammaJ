@@ -13,24 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.t3r1jj.gammaj.info;
+package io.github.t3r1jj.gammaj.info;
 
-public class Library {
+public class LibraryBuilder {
 
-    public final String name;
-    public final String licenseShort;
-    public final String licenseLong;
-    public final String url;
-    public final String version;
+    private String name;
+    private String licenseShort;
+    private String licenseLong;
+    private String url;
+    private String version;
 
-    public Library(String name, String licenseShort, String licenseLong, String url, String version) {
-        this.name = name;
-        this.licenseShort = licenseShort;
-        this.licenseLong = licenseLong;
-        this.url = url;
-        this.version = version;
+    public LibraryBuilder() {
     }
-    
-    
+
+    public LibraryBuilder setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public LibraryBuilder setLicenseShort(String licenseShort) {
+        this.licenseShort = licenseShort;
+        return this;
+    }
+
+    public LibraryBuilder setLicenseLong(String licenseLong) {
+        this.licenseLong = licenseLong;
+        return this;
+    }
+
+    public LibraryBuilder setUrl(String url) {
+        this.url = url;
+        return this;
+    }
+
+    public LibraryBuilder setVersion(String version) {
+        this.version = version;
+        return this;
+    }
+
+    public Library createLibrary() {
+        return new Library(name, licenseShort, licenseLong, url, version);
+    }
 
 }
