@@ -58,6 +58,11 @@ public abstract class AbstractScreen implements Screen {
     }
 
     @Override
+    public void setContrastGain(Channel channel, double contrast) {
+        gammaModel.contrastGain[channel.getIndex()] = contrast;
+    }
+
+    @Override
     public void setTemperature(ColorTemperature colorTemperature) {
         gammaModel.temperature = colorTemperature.getRgb();
     }

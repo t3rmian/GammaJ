@@ -23,25 +23,32 @@ public interface Screen {
 
     WinDef.HDC getHdc();
 
-    void setGamma(Gamma.Channel channel,double gamma);
+    void setGamma(Gamma.Channel channel, double gamma);
 
     /**
      *
      * @param channel RGB
-     * @param brightness value from 0f...1f range, 0.5 = no change
+     * @param brightness value from 0d...1d range, 0.5 = no change
      */
-    void setBrightness(Gamma.Channel channel,double brightness);
+    void setBrightness(Gamma.Channel channel, double brightness);
 
     /**
      *
      * @param channel RGB
-     * @param contrast value from -1f...1f range, 0 = no change
+     * @param contrast value from -1d...1d range, 0 = no change
      */
-    void setContrast(Gamma.Channel channel,double contrast);
+    void setContrast(Gamma.Channel channel, double contrast);
 
     /**
      * 
-     * @param temperature Kelvin 
+     * @param channel RGB
+     * @param contrastGain value from 0d...100d range, 50 = no change
+     */
+    void setContrastGain(Gamma.Channel channel, double contrastGain);
+
+    /**
+     *
+     * @param temperature Kelvin
      */
     void setTemperature(ColorTemperature temperature);
 
@@ -50,5 +57,5 @@ public interface Screen {
     void reinitialize();
 
     double[][] getGammaRamp();
-    
+
 }

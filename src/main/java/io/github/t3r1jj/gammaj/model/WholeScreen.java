@@ -53,6 +53,14 @@ public class WholeScreen extends AbstractScreen {
     }
 
     @Override
+    public void setContrastGain(Gamma.Channel channel, double contrastGain) {
+        super.setContrastGain(channel, contrastGain);
+        for (Screen screen : screens) {
+            screen.setContrastGain(channel, contrastGain);
+        }
+    }
+
+    @Override
     public void setBrightness(Gamma.Channel channel, double brightness) {
         super.setBrightness(channel, brightness);
         for (Screen screen : screens) {

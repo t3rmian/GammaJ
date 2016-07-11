@@ -32,6 +32,7 @@ public class Gamma {
     static final double DEFAULT_GAMMA = 1f;
     static final double DEFAULT_BRIGHTNESS = 0.5f;
     static final double DEFAULT_CONTRAST = 0f;
+    static final double DEFAULT_CONTRAST_GAIN = 50f;
     static final double DEFAULT_TEMPERATURE = 1f;
 
     private final HDC hdc;
@@ -39,6 +40,7 @@ public class Gamma {
     double[] gamma = new double[]{DEFAULT_GAMMA, DEFAULT_GAMMA, DEFAULT_GAMMA};
     double[] brightness = new double[]{DEFAULT_BRIGHTNESS, DEFAULT_BRIGHTNESS, DEFAULT_BRIGHTNESS};
     double[] contrast = new double[]{DEFAULT_CONTRAST, DEFAULT_CONTRAST, DEFAULT_CONTRAST};
+    double[] contrastGain = new double[]{DEFAULT_CONTRAST_GAIN, DEFAULT_CONTRAST_GAIN, DEFAULT_CONTRAST_GAIN};
     double[] temperature = new double[]{DEFAULT_TEMPERATURE, DEFAULT_TEMPERATURE, DEFAULT_TEMPERATURE};
 
     WORD[] gammaRamp = new WORD[TOTAL_RAMP_VALUES_COUNT];
@@ -69,6 +71,7 @@ public class Gamma {
             gamma[i] = Gamma.DEFAULT_GAMMA;
             brightness[i] = Gamma.DEFAULT_BRIGHTNESS;
             contrast[i] = Gamma.DEFAULT_CONTRAST;
+            contrastGain[i] = Gamma.DEFAULT_CONTRAST_GAIN;
             temperature[i] = Gamma.DEFAULT_TEMPERATURE;
         }
         setGammaRamp(DEFAULT_GAMMA_RAMP);
@@ -84,10 +87,21 @@ public class Gamma {
             int brightnessIncrement = (int) ((brightness[y] * 2 - 1f) * MAX_WORD);
             double contrastLevel = contrast[y] * 255;
             double contrastFactor = 259 * (contrastLevel + 255) / (255 * (259 - contrastLevel));
+
+            // TODO: Change this, also change gamma range
+            double contrastGainFactor = 1;
+            if (contrastGain[y] > 50) {
+                contrastGainFactor = Math.pow(32, (contrastGain[y] - 50) * 2 / 50);
+            } else {
+                contrastGainFactor = contrastGain[y] / 50;
+            }
+            System.out.println(contrastGainFactor);
+            
             for (int x = 0; x < newGammaRamp[0].length; x++) {
                 newGammaRamp[y][x] = (int) (Math.pow((double) x / SINGLE_RAMP_COLOR_VALUES_COUNT, gamma[y]) * MAX_WORD);
                 newGammaRamp[y][x] += brightnessIncrement;
                 newGammaRamp[y][x] = (int) (contrastFactor * (newGammaRamp[y][x] - MAX_HALF_WORD) + MAX_HALF_WORD);
+                newGammaRamp[y][x] *= contrastGainFactor;
                 newGammaRamp[y][x] *= temperature[y];
 
                 if (newGammaRamp[y][x] > MAX_WORD) {
