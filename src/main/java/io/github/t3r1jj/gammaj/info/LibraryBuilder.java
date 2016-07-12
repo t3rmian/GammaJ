@@ -17,7 +17,8 @@ package io.github.t3r1jj.gammaj.info;
 
 public class LibraryBuilder {
 
-    private String name;
+    private String nameShort;
+    private String nameLong;
     private String licenseShort;
     private String licenseLong;
     private String url;
@@ -26,8 +27,13 @@ public class LibraryBuilder {
     public LibraryBuilder() {
     }
 
-    public LibraryBuilder setName(String name) {
-        this.name = name;
+    public LibraryBuilder setNameLong(String nameLong) {
+        this.nameLong = nameLong;
+        return this;
+    }
+
+    public LibraryBuilder setNameShort(String nameShort) {
+        this.nameShort = nameShort;
         return this;
     }
 
@@ -52,7 +58,7 @@ public class LibraryBuilder {
     }
 
     public Library createLibrary() {
-        return new Library(name, licenseShort, licenseLong, url, version);
+        return new Library(nameLong, nameShort, licenseLong, licenseShort, url, version);
     }
 
 }

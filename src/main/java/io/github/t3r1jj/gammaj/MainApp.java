@@ -25,21 +25,29 @@ import javax.swing.SwingUtilities;
 
 public class MainApp extends Application {
 
+    private TrayRunnable trayRunnable;
+    private boolean trayEnabled = false;
+    
     @Override
     public void start(Stage stage) throws Exception {
         GammaRegistry gammaRegistry = new GammaRegistry();
         gammaRegistry.installGammaExtension();
 
-        SwingUtilities.invokeLater(new TrayRunnable(stage));
-
-        Parent root = FXMLLoader.load(getClass().getResource("/fxml/Scene.fxml"));
+        trayRunnable = new TrayRunnable(stage, trayEnabled);
+        FXMLLoader fXMLLoader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
+        fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayRunnable));
+        Parent root = fXMLLoader.load();
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
 
         stage.setTitle("JavaFX and Maven");
         stage.setScene(scene);
-//        stage.show();
+        
+        SwingUtilities.invokeLater(trayRunnable);
+        if (!trayEnabled) {
+            stage.show();
+        }
     }
 
     /**

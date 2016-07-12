@@ -37,7 +37,7 @@ public class ProjectInfo {
         return properties.getProperty("version");
     }
     
-    public String getName() {
+    public String getProjectName() {
         return properties.getProperty("name");
     }
     
@@ -45,14 +45,35 @@ public class ProjectInfo {
         return properties.getProperty("projectUrl");
     }
     
+    public String getDeveloperName() {
+        return properties.getProperty("developerName");
+    }
+    
+    public String getDeveloperEmail() {
+        return properties.getProperty("developerEmail");
+    }
+    
     public String getDeveloperUrl() {
         return properties.getProperty("developerUrl");
+    }
+    
+    public String getAboutHeader() {
+        return getProjectName() + " v" + getVersion();
+    }
+    
+    public String getAboutContent() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Author: ").append(getDeveloperName()).append("\n")
+                .append("Email: ").append(getDeveloperEmail()).append("\n")
+                .append("Website: ").append(getDeveloperUrl());
+        return stringBuilder.toString();
     }
     
     public List<Library> getLibrariesUsed() {
         List<Library> libraries = new ArrayList<>();
         libraries.add(new LibraryBuilder()
-                .setName("Java Native Access (JNA)")
+                .setNameLong("Java Native Access (JNA)")
+                .setNameShort("JNA")
                 .setLicenseShort("Apache License, Version 2.0")
                 .setLicenseLong("Java Native Access project (JNA) is dual-licensed under 2 \n"
                         + "alternative Open Source/Free licenses: LGPL 2.1 and \n"

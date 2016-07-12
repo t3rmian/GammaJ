@@ -35,16 +35,23 @@ import javafx.stage.WindowEvent;
 import javax.imageio.ImageIO;
 
 public class TrayRunnable implements Runnable {
-
+    
     private static final String iconImagePath = "images/tray_icon.png";
     private final Stage stage;
+    private boolean trayEnabled;
     private TrayIcon trayIcon;
     private SystemTray systemTray;
-
-    public TrayRunnable(Stage stage) {
+    private ChangeListener changeListener;
+    
+    public TrayRunnable(Stage stage, boolean trayEnabled) {
         this.stage = stage;
+        this.trayEnabled = trayEnabled;
     }
-
+    
+    public boolean isTrayEnabled() {
+        return trayEnabled;
+    }
+    
     @Override
     public void run() {
         try {
@@ -57,52 +64,66 @@ public class TrayRunnable implements Runnable {
             setExitAction();
         } catch (AWTError | IOException | AWTException toolkitError) {
             Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, toolkitError);
-        }
-    }
-
-    private void setupTrayIcon() throws IOException, AWTException {
-        Image imageIcon = ImageIO.read(this.getClass().getClassLoader().getResourceAsStream(iconImagePath));
-        systemTray = SystemTray.getSystemTray();
-        trayIcon = new TrayIcon(imageIcon);
-        trayIcon.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        showStage();
-                    }
-                });
-            }
-        });
-        systemTray.add(trayIcon);
-    }
-
-    private void showStage() {
-        if (stage != null) {
             stage.show();
-            stage.toFront();
         }
     }
-
-    private void setTrayOnIconify() {
-        stage.iconifiedProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean wasIconified, Boolean nowIconified) {
-                if (nowIconified) {
-                    stage.hide();
-                    stage.setIconified(false);
+    
+    private void setupTrayIcon() throws IOException, AWTException {
+        if (trayEnabled) {
+            Image imageIcon = ImageIO.read(this.getClass().getClassLoader().getResourceAsStream(iconImagePath));
+            systemTray = SystemTray.getSystemTray();
+            trayIcon = new TrayIcon(imageIcon);
+            trayIcon.addActionListener(new ActionListener() {
+                
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Platform.runLater(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            showStage();
+                        }
+                    });
                 }
-            }
-        });
+            });
+            systemTray.add(trayIcon);
+        } else if (trayIcon != null) {
+            systemTray.remove(trayIcon);
+        }
     }
-
+    
+    private void showStage() {
+        stage.show();
+        stage.toFront();
+    }
+    
+    public void enableTray(boolean enable) throws IOException, AWTException {
+        trayEnabled = enable;
+        setupTrayIcon();
+        setTrayOnIconify();
+    }
+    
+    private void setTrayOnIconify() {
+        if (trayEnabled) {
+            changeListener = new ChangeListener<Boolean>() {
+                
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean wasIconified, Boolean nowIconified) {
+                    if (nowIconified) {
+                        stage.hide();
+                        stage.setIconified(false);
+                    }
+                }
+            };
+            stage.iconifiedProperty().addListener(changeListener);
+        } else if (changeListener != null) {
+            stage.iconifiedProperty().removeListener(changeListener);
+        }
+    }
+    
     private void setExitAction() {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-
+            
             @Override
             public void handle(WindowEvent event) {
                 Platform.exit();
@@ -112,5 +133,5 @@ public class TrayRunnable implements Runnable {
         });
         Platform.setImplicitExit(false);
     }
-
+    
 }

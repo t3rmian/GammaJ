@@ -41,7 +41,7 @@ public class ProjectInfoTest {
 
     @Test
     public void testGetName() {
-        String name = properties.getName();
+        String name = properties.getProjectName();
         System.out.println("Name: " + name);
         Assert.assertNotNull(name);
     }

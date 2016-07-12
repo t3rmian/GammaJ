@@ -15,14 +15,24 @@
  */
 package io.github.t3r1jj.gammaj;
 
+import io.github.t3r1jj.gammaj.info.Library;
+import io.github.t3r1jj.gammaj.info.ProjectInfo;
 import io.github.t3r1jj.gammaj.model.ColorTemperature;
 import io.github.t3r1jj.gammaj.model.Gamma.Channel;
 import io.github.t3r1jj.gammaj.model.Display;
 import io.github.t3r1jj.gammaj.model.DisplayUtil;
 import io.github.t3r1jj.gammaj.model.MultiDisplay;
+import java.awt.AWTException;
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.application.HostServices;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -30,6 +40,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
 import javafx.scene.paint.Color;
@@ -39,6 +54,8 @@ import javafx.util.StringConverter;
 public class FXMLController implements Initializable {
 
     private Display currentScreen;
+    private final HostServices hostServices;
+    private final TrayRunnable trayRunnable;
 
     @FXML
     private ComboBox<Display> screenComboBox;
@@ -63,12 +80,86 @@ public class FXMLController implements Initializable {
     private static final Paint[] GAMMA_CANVAS_LINE_COLOR = new Paint[]{Color.RED, Color.GREEN, Color.BLUE};
     private static final double TEMPERATURE_SLIDER_DEFAULT_VALUE = 6500;
 
+    public FXMLController(HostServices hostServices, TrayRunnable trayRunnable) {
+        this.hostServices = hostServices;
+        this.trayRunnable = trayRunnable;
+    }
+
     @FXML
     private void handleResetButtonAction(ActionEvent event) {
         System.out.println("Reset button clicked!");
         resetSliders();
         currentScreen.resetGammaRamp();
         drawGammaLine();
+    }
+
+    @FXML
+    private void handleExitAction(ActionEvent event) {
+        Platform.exit();
+        System.exit(0);
+    }
+
+    @FXML
+    private void handleTraySelectedChange(ActionEvent event) {
+        CheckMenuItem trayCheckBox = (CheckMenuItem) event.getSource();
+        boolean trayEnabled = trayCheckBox.isSelected();
+        try {
+            trayRunnable.enableTray(trayEnabled);
+        } catch (IOException | AWTException ex) {
+            Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @FXML
+    private void handleAboutAction(ActionEvent event) {
+        ProjectInfo projectInfo = new ProjectInfo();
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("About");
+        alert.setHeaderText(projectInfo.getAboutHeader());
+        alert.setContentText(projectInfo.getAboutContent());
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void handleLicenseAction(ActionEvent event) {
+        ProjectInfo projectInfo = new ProjectInfo();
+        Alert alert = new Alert(AlertType.INFORMATION);
+        List<Library> libraries = projectInfo.getLibrariesUsed();
+        StringBuilder stringBuilder = new StringBuilder();
+        List<ButtonType> buttons = new ArrayList<>();
+        ButtonType okButton = new ButtonType("OK", ButtonData.OK_DONE);
+        for (Library library : libraries) {
+            stringBuilder.append(library.nameLong)
+                    .append(" v")
+                    .append(library.version)
+                    .append(" - ")
+                    .append(library.licenseShort);
+            ButtonType button = new ButtonType(library.nameShort);
+            buttons.add(button);
+        }
+        buttons.add(okButton);
+        alert.setTitle("Licenses");
+        alert.setHeaderText("Libraries used");
+        alert.setContentText(stringBuilder.toString());
+        alert.getButtonTypes().setAll(buttons);
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() != okButton) {
+            Library pressedLibrary = libraries.get(buttons.indexOf(result.get()));
+            showLibraryLicense(pressedLibrary);
+        }
+    }
+
+    private void showLibraryLicense(Library pressedLibrary) {
+        Alert licenseAlert = new Alert(AlertType.INFORMATION);
+        licenseAlert.setTitle(pressedLibrary.nameLong);
+        licenseAlert.setHeaderText(null);
+        licenseAlert.setContentText(pressedLibrary.licenseLong);
+        ButtonType urlButton = new ButtonType("Website");
+        licenseAlert.getButtonTypes().addAll(urlButton);
+        Optional<ButtonType> licenseResult = licenseAlert.showAndWait();
+        if (licenseResult.get().equals(urlButton)) {
+            hostServices.showDocument(pressedLibrary.url);
+        }
     }
 
     @Override
@@ -141,7 +232,7 @@ public class FXMLController implements Initializable {
 
             @Override
             public String toString(Double object) {
-                return (int)(object / 1000) + "kK";
+                return (int) (object / 1000) + "kK";
             }
 
             @Override

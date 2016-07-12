@@ -17,20 +17,20 @@ package io.github.t3r1jj.gammaj.info;
 
 public class Library {
 
-    public final String name;
+    public final String nameShort;
+    public final String nameLong;
     public final String licenseShort;
     public final String licenseLong;
     public final String url;
     public final String version;
 
-    public Library(String name, String licenseShort, String licenseLong, String url, String version) {
-        this.name = name;
-        this.licenseShort = licenseShort;
+    public Library(String nameLong, String nameShort, String licenseLong, String licenseShort, String url, String version) {
+        this.nameLong = nameLong;
+        this.nameShort = nameShort;
         this.licenseLong = licenseLong;
+        this.licenseShort = licenseShort;
         this.url = url;
         this.version = version;
     }
-    
-    
 
 }

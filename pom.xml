@@ -12,6 +12,7 @@
         <mainClass>io.github.t3r1jj.gammaj.MainApp</mainClass>
         <developer-url>https://T3r1jj.github.io</developer-url>
         <developer-email>T3r1jj@gmail.com</developer-email>
+        <developer-name>Damian Terlecki</developer-name>
     </properties>
 
     <licenses>
@@ -23,10 +24,10 @@
     <name>GammaJ</name>
     <description>Display gamma correction tool</description>
     <url>https://github.com/T3r1jj/GammaJ</url>
-    <inceptionYear>>2016</inceptionYear>
+    <inceptionYear>2016</inceptionYear>
     <developers>
         <developer>
-            <name>Damian Terlecki</name>
+            <name>${developer-name}</name>
             <url>${developer-email}</url>
             <id>T3r1jj</id>
         </developer>
