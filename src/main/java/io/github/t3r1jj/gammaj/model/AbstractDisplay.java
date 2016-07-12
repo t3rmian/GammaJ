@@ -38,33 +38,28 @@ public abstract class AbstractDisplay implements Display {
     }
 
     @Override
-    public WinDef.HDC getHdc() {
-        return hdc;
-    }
-
-    @Override
     public void setGamma(Channel channel, double gamma) {
-        gammaModel.gamma[channel.getIndex()] = gamma;
+        gammaModel.setGamma(channel, gamma);;
     }
 
     @Override
     public void setBrightness(Channel channel, double brightness) {
-        gammaModel.brightness[channel.getIndex()] = brightness;
+        gammaModel.setBrightness(channel, brightness);
     }
 
     @Override
-    public void setContrast(Channel channel, double contrast) {
-        gammaModel.contrast[channel.getIndex()] = contrast;
+    public void setContrastBilateral(Channel channel, double contrast) {
+        gammaModel.setContrastBilateral(channel, contrast);
     }
 
     @Override
-    public void setContrastGain(Channel channel, double contrast) {
-        gammaModel.contrastGain[channel.getIndex()] = contrast;
+    public void setContrastUnilateral(Channel channel, double contrast) {
+        gammaModel.setContrastUnilateral(channel, contrast);
     }
 
     @Override
     public void setTemperature(ColorTemperature colorTemperature) {
-        gammaModel.temperature = colorTemperature.getRgb();
+        gammaModel.setTemperature(colorTemperature.getRgb());
     }
 
     @Override

@@ -28,10 +28,10 @@ limitations under the License.
     <children>
         <Button fx:id="resetButton" layoutX="198.0" layoutY="530.0" onAction="#handleResetButtonAction" styleClass="buttonClass" text="Reset gamma" />
         <Label fx:id="label" styleClass="versionLabel"  layoutX="105.0" layoutY="569.0" minHeight="16" minWidth="69" text="GammaJ v0.2.0 experimental, author: Damian Terlecki" />
-        <Slider fx:id="gammaSlider" layoutX="174.0" layoutY="352.0" majorTickUnit="1" max="6" min="-4" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" stylesheets="@../styles/Styles.css" />
+        <Slider fx:id="gammaSlider" layoutX="174.0" layoutY="352.0" majorTickUnit="1" max="6" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" stylesheets="@../styles/Styles.css" />
         <Slider fx:id="brightnessSlider" layoutX="174.0" layoutY="382.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
-        <Slider fx:id="contrastSlider" layoutX="174.0" layoutY="412.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
-        <Slider fx:id="contrastGainSlider" layoutX="174.0" layoutY="442.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
+        <Slider fx:id="contrastBilateralSlider" layoutX="174.0" layoutY="412.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
+        <Slider fx:id="contrastUnilateralSlider" layoutX="174.0" layoutY="442.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
         <Slider fx:id="temperatureSlider" layoutX="174.0" layoutY="472.0" max="25000" min="1000" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
         <Pane fx:id="canvasPane" layoutX="115.0" layoutY="71.0" styleClass="canvasPane">
             <children>

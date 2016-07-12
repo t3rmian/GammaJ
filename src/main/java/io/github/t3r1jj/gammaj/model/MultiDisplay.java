@@ -45,18 +45,18 @@ public class MultiDisplay extends AbstractDisplay {
     }
 
     @Override
-    public void setContrast(Gamma.Channel channel, double contrast) {
-        super.setContrast(channel, contrast);
+    public void setContrastBilateral(Gamma.Channel channel, double contrast) {
+        super.setContrastBilateral(channel, contrast);
         for (Display screen : screens) {
-            screen.setContrast(channel, contrast);
+            screen.setContrastBilateral(channel, contrast);
         }
     }
 
     @Override
-    public void setContrastGain(Gamma.Channel channel, double contrastGain) {
-        super.setContrastGain(channel, contrastGain);
+    public void setContrastUnilateral(Gamma.Channel channel, double contrastGain) {
+        super.setContrastUnilateral(channel, contrastGain);
         for (Display screen : screens) {
-            screen.setContrastGain(channel, contrastGain);
+            screen.setContrastUnilateral(channel, contrastGain);
         }
     }
 

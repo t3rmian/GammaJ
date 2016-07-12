@@ -15,47 +15,62 @@
  */
 package io.github.t3r1jj.gammaj.model;
 
-import com.sun.jna.platform.win32.WinDef;
-
 public interface Display {
 
+    /**
+     * 
+     * @return name of display
+     */
     String getName();
 
-    WinDef.HDC getHdc();
-
+    /**
+     * 
+     * @param channel RGB
+     * @param gamma value from 0d...infinity range
+     */
     void setGamma(Gamma.Channel channel, double gamma);
 
     /**
      *
      * @param channel RGB
-     * @param brightness value from 0d...1d range, 0.5 = no change
+     * @param brightness value from 0d...100d range, 50 = no change
      */
     void setBrightness(Gamma.Channel channel, double brightness);
 
     /**
      *
      * @param channel RGB
-     * @param contrast value from -1d...1d range, 0 = no change
+     * @param contrastBilateral value from 0d...100d range, 50 = no change
      */
-    void setContrast(Gamma.Channel channel, double contrast);
+    void setContrastBilateral(Gamma.Channel channel, double contrastBilateral);
 
     /**
      * 
      * @param channel RGB
-     * @param contrastGain value from 0d...100d range, 50 = no change
+     * @param contrastUnilateral value from 0d...100d range, 50 = no change
      */
-    void setContrastGain(Gamma.Channel channel, double contrastGain);
+    void setContrastUnilateral(Gamma.Channel channel, double contrastUnilateral);
 
     /**
      *
-     * @param temperature Kelvin
+     * @param temperature in Kelvin, value from 1000...25000 range
      */
     void setTemperature(ColorTemperature temperature);
 
+    /**
+     * Resets gamma ramp to default, linear values for all channels
+     */
     void resetGammaRamp();
 
+    /**
+     * Recalculates and sets gamma ramp based on current model
+     */
     void reinitialize();
 
+    /**
+     * 
+     * @return normalized (0d...1d) gamma ramp for all RGB channels (256 values each)
+     */
     double[][] getGammaRamp();
 
 }

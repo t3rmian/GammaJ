@@ -46,9 +46,9 @@ public class FXMLController implements Initializable {
     @FXML
     private Slider brightnessSlider;
     @FXML
-    private Slider contrastSlider;
+    private Slider contrastBilateralSlider;
     @FXML
-    private Slider contrastGainSlider;
+    private Slider contrastUnilateralSlider;
     @FXML
     private Slider temperatureSlider;
 
@@ -56,8 +56,8 @@ public class FXMLController implements Initializable {
     private Canvas canvas;
     private static final double GAMMA_SLIDER_DEFAULT_VALUE = 1;
     private static final double BRIGHTNESS_SLIDER_DEFAULT_VALUE = 50;
-    private static final double CONTRAST_SLIDER_DEFAULT_VALUE = 50;
-    private static final double CONTRAST_GAIN_SLIDER_DEFAULT_VALUE = 50;
+    private static final double CONTRAST_BILATERAL_SLIDER_DEFAULT_VALUE = 50;
+    private static final double CONTRAST_UNILATERAL_SLIDER_DEFAULT_VALUE = 50;
     private static final Paint GAMMA_CANVAS_BACKGROUND_COLOR = Color.WHITE;
     private static final Paint[] GAMMA_CANVAS_LINE_COLOR = new Paint[]{Color.RED, Color.GREEN, Color.BLUE};
     private static final double TEMPERATURE_SLIDER_DEFAULT_VALUE = 6500;
@@ -107,29 +107,29 @@ public class FXMLController implements Initializable {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                currentScreen.setBrightness(Channel.RED, newValue.doubleValue() / 100f);
+                currentScreen.setBrightness(Channel.RED, newValue.doubleValue());
                 currentScreen.reinitialize();
                 drawGammaLine();
             }
 
         });
-        contrastSlider.setValue(CONTRAST_SLIDER_DEFAULT_VALUE);
-        contrastSlider.valueProperty().addListener(new ChangeListener<Number>() {
+        contrastBilateralSlider.setValue(CONTRAST_BILATERAL_SLIDER_DEFAULT_VALUE);
+        contrastBilateralSlider.valueProperty().addListener(new ChangeListener<Number>() {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                currentScreen.setContrast(Channel.RED, (newValue.doubleValue() - 50) / 50f);
+                currentScreen.setContrastBilateral(Channel.RED, newValue.doubleValue());
                 currentScreen.reinitialize();
                 drawGammaLine();
             }
 
         });
-        contrastGainSlider.setValue(CONTRAST_GAIN_SLIDER_DEFAULT_VALUE);
-        contrastGainSlider.valueProperty().addListener(new ChangeListener<Number>() {
+        contrastUnilateralSlider.setValue(CONTRAST_UNILATERAL_SLIDER_DEFAULT_VALUE);
+        contrastUnilateralSlider.valueProperty().addListener(new ChangeListener<Number>() {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                currentScreen.setContrastGain(Channel.RED, newValue.doubleValue());
+                currentScreen.setContrastUnilateral(Channel.RED, newValue.doubleValue());
                 currentScreen.reinitialize();
                 drawGammaLine();
             }
@@ -171,8 +171,8 @@ public class FXMLController implements Initializable {
     private void resetSliders() {
         gammaSlider.setValue(GAMMA_SLIDER_DEFAULT_VALUE);
         brightnessSlider.setValue(BRIGHTNESS_SLIDER_DEFAULT_VALUE);
-        contrastSlider.setValue(CONTRAST_SLIDER_DEFAULT_VALUE);
-        contrastGainSlider.setValue(CONTRAST_GAIN_SLIDER_DEFAULT_VALUE);
+        contrastBilateralSlider.setValue(CONTRAST_BILATERAL_SLIDER_DEFAULT_VALUE);
+        contrastUnilateralSlider.setValue(CONTRAST_UNILATERAL_SLIDER_DEFAULT_VALUE);
         temperatureSlider.setValue(TEMPERATURE_SLIDER_DEFAULT_VALUE);
     }
 

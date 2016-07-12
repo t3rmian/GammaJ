@@ -58,7 +58,7 @@ public class GammaTest {
 
     @org.junit.Test
     public void testReinitializeGammaRamp() {
-        instance.gamma[0] = 1.5f;
+        instance.setGamma(Gamma.Channel.RED, 1.5f);
         instance.reinitializeGammaRamp();
         assertThat(Gamma.DEFAULT_GAMMA_RAMP, is(not(equalTo(instance.getGammaRamp()))));
     }
