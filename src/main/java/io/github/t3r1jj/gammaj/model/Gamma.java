@@ -91,7 +91,7 @@ public class Gamma {
             // TODO: Change this, also change gamma range
             double contrastGainFactor = 1;
             if (contrastGain[y] > 50) {
-                contrastGainFactor = Math.pow(32, (contrastGain[y] - 50) * 2 / 50);
+                contrastGainFactor = Math.tan(Math.PI/4 + Math.PI*(contrastGain[y] - 50)/(50*4));
             } else {
                 contrastGainFactor = contrastGain[y] / 50;
             }
