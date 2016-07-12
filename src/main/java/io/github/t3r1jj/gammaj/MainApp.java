@@ -21,7 +21,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
+import javax.swing.SwingUtilities;
 
 public class MainApp extends Application {
 
@@ -29,15 +29,17 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         GammaRegistry gammaRegistry = new GammaRegistry();
         gammaRegistry.installGammaExtension();
-        
+
+        SwingUtilities.invokeLater(new TrayRunnable(stage));
+
         Parent root = FXMLLoader.load(getClass().getResource("/fxml/Scene.fxml"));
-        
+
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
-        
+
         stage.setTitle("JavaFX and Maven");
         stage.setScene(scene);
-        stage.show();
+//        stage.show();
     }
 
     /**
@@ -51,5 +53,6 @@ public class MainApp extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
 
 }
