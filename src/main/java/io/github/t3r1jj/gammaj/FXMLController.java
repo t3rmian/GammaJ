@@ -34,6 +34,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.util.StringConverter;
 
 public class FXMLController implements Initializable {
 
@@ -65,8 +66,8 @@ public class FXMLController implements Initializable {
     @FXML
     private void handleResetButtonAction(ActionEvent event) {
         System.out.println("Reset button clicked!");
-        currentScreen.resetGammaRamp();
         resetSliders();
+        currentScreen.resetGammaRamp();
         drawGammaLine();
     }
 
@@ -135,6 +136,20 @@ public class FXMLController implements Initializable {
             }
 
         });
+
+        temperatureSlider.setLabelFormatter(new StringConverter<Double>() {
+
+            @Override
+            public String toString(Double object) {
+                return (int)(object / 1000) + "kK";
+            }
+
+            @Override
+            public Double fromString(String string) {
+                return Double.valueOf(string.substring(0, string.length() - 2));
+            }
+        });
+
         temperatureSlider.setValue(TEMPERATURE_SLIDER_DEFAULT_VALUE);
         temperatureSlider.valueProperty().addListener(new ChangeListener<Number>() {
 

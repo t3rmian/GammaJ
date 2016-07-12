@@ -17,24 +17,22 @@ package io.github.t3r1jj.gammaj.model;
 
 public class ColorTemperature {
 
-    private static final double A = 0.055;
-    private static final double GAMMA = 2.4;
-
-    double temperature;
-    double xc;
-    double yc;
-
-    double y = 1d;
-
-    double x;
-    double z;
-
-    double rgb[] = new double[3];
+    protected final double rgb[] = new double[3];
+    private final double temperature;
+    private double xc;
+    private double yc;
+    private double y;
+    private double x;
+    private double z;
     private double u;
     private double v;
 
     public double[] getRgb() {
         return rgb;
+    }
+    
+    public ColorTemperatureSrgb toSrgb() {
+        return new ColorTemperatureSrgb(temperature);
     }
 
     /**
@@ -96,15 +94,9 @@ public class ColorTemperature {
         z = (yc == 0) ? 0 : ((1 - xc - yc) * y) / yc;
     }
 
-    /**
-     * sRGB color space
-     */
     private void XyzToRgb() {
         calculateLinearRgb();
         scale();
-
-        // Do I calculate sRGB or leave it with current values compatible with http://www.vendian.org/mncharity/dir3/blackbody/UnstableURLs/bbr_color.html ?
-        //        calculateSrgb();
     }
 
     private void calculateLinearRgb() {
@@ -125,23 +117,13 @@ public class ColorTemperature {
         }
     }
 
-    private void calculateSrgb() {
-        for (int i = 0; i < 3; i++) {
-            rgb[i] = (rgb[i] <= 0.0031308) ? rgb[i] * 12.92 : 1.055 * Math.pow(rgb[i], 1d / GAMMA) - A;
-        }
-    }
-
     private void temperatureToCie1960Ucs() {
         u = (0.860117757 + 1.54118254 * Math.pow(10, -4) * temperature + 1.28641212 * Math.pow(10, -7) * temperature * temperature)
                 / (1 + 8.42420235 * Math.pow(10, -4) * temperature + 7.08145163 * Math.pow(10, -7) * temperature * temperature);
         v = (0.317398726 + 4.22806245 * Math.pow(10, -5) * temperature + 4.20481691 * Math.pow(10, -8) * temperature * temperature)
                 / (1 - 2.89741816 * Math.pow(10, -5) * temperature + 1.61456053 * Math.pow(10, -7) * temperature * temperature);
-        System.out.println("u" + u);
-        System.out.println("v" + v);
         xc = 3d * u / (2d * u - 8d * v + 4d);
         yc = 2d * v / (2d * u - 8d * v + 4d);
-        System.out.println("x" + xc);
-        System.out.println("y" + yc);
     }
 
 }

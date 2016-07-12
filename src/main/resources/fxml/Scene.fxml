@@ -32,7 +32,7 @@ limitations under the License.
         <Slider fx:id="brightnessSlider" layoutX="174.0" layoutY="382.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
         <Slider fx:id="contrastBilateralSlider" layoutX="174.0" layoutY="412.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
         <Slider fx:id="contrastUnilateralSlider" layoutX="174.0" layoutY="442.0" majorTickUnit="25" max="100" min="0" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
-        <Slider fx:id="temperatureSlider" layoutX="174.0" layoutY="472.0" max="25000" min="1000" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
+        <Slider fx:id="temperatureSlider" layoutX="174.0" layoutY="472.0" max="25000" min="1000" majorTickUnit="6000" minWidth="69" showTickLabels="true" showTickMarks="true" styleClass="slider" />
         <Pane fx:id="canvasPane" layoutX="115.0" layoutY="71.0" styleClass="canvasPane">
             <children>
                 <Canvas fx:id="canvas" height="256" nodeOrientation="INHERIT" styleClass="canvas" width="256" />
