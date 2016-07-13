@@ -20,7 +20,7 @@ import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinDef.HDC;
 import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.platform.win32.WinUser.MONITORENUMPROC;
-import io.github.t3r1jj.gammaj.MyGDI32;
+import io.github.t3r1jj.gammaj.jna.MyGDI32;
 
 public class DisplayUtil {
 
@@ -48,7 +48,7 @@ public class DisplayUtil {
         return monitor;
     }
 
-    public MultiDisplay getWholeScreen() {
+    public MultiDisplay getMultiDisplay() {
         String lpszDriver = "DISPLAY";
         HDC hdc = MyGDI32.INSTANCE.CreateDC(lpszDriver, null, null, null);
         MultiDisplay screen = new MultiDisplay(hdc);

@@ -9,7 +9,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mainClass>io.github.t3r1jj.gammaj.MainApp</mainClass>
+        <mainClass>io.github.t3r1jj.gammaj.GammaJ</mainClass>
         <developer-url>https://T3r1jj.github.io</developer-url>
         <developer-email>T3r1jj@gmail.com</developer-email>
         <developer-name>Damian Terlecki</developer-name>
@@ -143,6 +143,11 @@
             <artifactId>junit</artifactId>
             <version>4.10</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.guigarage</groupId>
+            <artifactId>flatter</artifactId>
+            <version>0.7</version>
         </dependency>
     </dependencies>
 </project>

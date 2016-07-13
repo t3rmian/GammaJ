@@ -15,39 +15,37 @@
  */
 package io.github.t3r1jj.gammaj;
 
+import io.github.t3r1jj.gammaj.controllers.ApplicationControllerFactory;
+import io.github.t3r1jj.gammaj.jna.GammaRegistry;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javax.swing.SwingUtilities;
 
-public class MainApp extends Application {
+public class GammaJ extends Application {
 
-    private TrayRunnable trayRunnable;
-    private boolean trayEnabled = false;
-    
+    private TrayManager trayManager;
+
     @Override
     public void start(Stage stage) throws Exception {
         GammaRegistry gammaRegistry = new GammaRegistry();
         gammaRegistry.installGammaExtension();
 
-        trayRunnable = new TrayRunnable(stage, trayEnabled);
+        trayManager = new TrayManager(stage);
         FXMLLoader fXMLLoader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
-        fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayRunnable));
+        fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayManager));
         Parent root = fXMLLoader.load();
-
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
 
         stage.setTitle("JavaFX and Maven");
         stage.setScene(scene);
-        
-        SwingUtilities.invokeLater(trayRunnable);
-        if (!trayEnabled) {
-            stage.show();
-        }
+
+        stage.show();
+        stage.setMaxWidth(stage.getWidth());
+        stage.setMaxHeight(stage.getHeight());
     }
 
     /**
@@ -61,6 +59,5 @@ public class MainApp extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-
 
 }

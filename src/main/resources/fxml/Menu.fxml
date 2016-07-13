@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<MenuBar fx:id="menuBar" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.t3r1jj.gammaj.controllers.MenuBarController"
+         AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <menus>
+        <Menu text="File">
+            <items>
+                <MenuItem onAction="#handleExitAction" text="Exit" />
+            </items>
+        </Menu>
+        <Menu text="View">
+            <items>
+                <CheckMenuItem onAction="#handleTraySelectedChange" text="Tray on minimize" />
+            </items>
+        </Menu>
+        <Menu text="Help">
+            <items>
+                <MenuItem onAction="#handleAboutAction" text="About" />
+                <MenuItem onAction="#handleLicenseAction" text="Licenses" />
+            </items>
+        </Menu>
+    </menus>
+</MenuBar>

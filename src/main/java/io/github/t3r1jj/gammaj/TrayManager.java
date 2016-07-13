@@ -17,6 +17,7 @@ package io.github.t3r1jj.gammaj;
 
 import java.awt.AWTError;
 import java.awt.AWTException;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
@@ -34,26 +35,35 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javax.imageio.ImageIO;
 
-public class TrayRunnable implements Runnable {
-    
+public class TrayManager {
+
     private static final String iconImagePath = "images/tray_icon.png";
     private final Stage stage;
-    private boolean trayEnabled;
+    private boolean trayEnabled = false;
     private TrayIcon trayIcon;
     private SystemTray systemTray;
     private ChangeListener changeListener;
-    
-    public TrayRunnable(Stage stage, boolean trayEnabled) {
+
+    public TrayManager(Stage stage) {
         this.stage = stage;
-        this.trayEnabled = trayEnabled;
+        setExitAction();
     }
-    
+
     public boolean isTrayEnabled() {
         return trayEnabled;
     }
+
+    public void enableTray(boolean enable) throws IOException, AWTException {
+        trayEnabled = enable;
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setupTray();
+            }
+        });
+    }
     
-    @Override
-    public void run() {
+    private void setupTray() {
         try {
             Toolkit.getDefaultToolkit();
             if (!SystemTray.isSupported()) {
@@ -61,24 +71,23 @@ public class TrayRunnable implements Runnable {
             }
             setupTrayIcon();
             setTrayOnIconify();
-            setExitAction();
         } catch (AWTError | IOException | AWTException toolkitError) {
-            Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, toolkitError);
+            Logger.getLogger(GammaJ.class.getName()).log(Level.SEVERE, null, toolkitError);
             stage.show();
         }
     }
-    
+
     private void setupTrayIcon() throws IOException, AWTException {
         if (trayEnabled) {
             Image imageIcon = ImageIO.read(this.getClass().getClassLoader().getResourceAsStream(iconImagePath));
             systemTray = SystemTray.getSystemTray();
             trayIcon = new TrayIcon(imageIcon);
             trayIcon.addActionListener(new ActionListener() {
-                
+
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     Platform.runLater(new Runnable() {
-                        
+
                         @Override
                         public void run() {
                             showStage();
@@ -91,22 +100,16 @@ public class TrayRunnable implements Runnable {
             systemTray.remove(trayIcon);
         }
     }
-    
+
     private void showStage() {
         stage.show();
         stage.toFront();
     }
-    
-    public void enableTray(boolean enable) throws IOException, AWTException {
-        trayEnabled = enable;
-        setupTrayIcon();
-        setTrayOnIconify();
-    }
-    
+
     private void setTrayOnIconify() {
         if (trayEnabled) {
             changeListener = new ChangeListener<Boolean>() {
-                
+
                 @Override
                 public void changed(ObservableValue<? extends Boolean> observable, Boolean wasIconified, Boolean nowIconified) {
                     if (nowIconified) {
@@ -120,18 +123,20 @@ public class TrayRunnable implements Runnable {
             stage.iconifiedProperty().removeListener(changeListener);
         }
     }
-    
+
     private void setExitAction() {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            
+
             @Override
             public void handle(WindowEvent event) {
                 Platform.exit();
-                systemTray.remove(trayIcon);
+                if (trayIcon != null) {
+                    systemTray.remove(trayIcon);
+                }
                 System.exit(0);
             }
         });
         Platform.setImplicitExit(false);
     }
-    
+
 }

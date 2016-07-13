@@ -18,7 +18,7 @@ package io.github.t3r1jj.gammaj.model;
 import com.sun.jna.platform.win32.WinDef.BOOL;
 import com.sun.jna.platform.win32.WinDef.HDC;
 import com.sun.jna.platform.win32.WinDef.WORD;
-import io.github.t3r1jj.gammaj.MyGDI32;
+import io.github.t3r1jj.gammaj.jna.MyGDI32;
 
 public class Gamma {
 
@@ -39,6 +39,7 @@ public class Gamma {
     private final double[] brightness = new double[3];
     private final double[] contrastBilateral = new double[3];
     private final double[] contrastUnilateral = new double[3];
+    private final boolean[] channelsInverted = new boolean[]{false, false, false};
     private double[] temperature = DEFAULT_TEMPERATURE;
 
     private final HDC hdc;
@@ -62,7 +63,13 @@ public class Gamma {
             setContrastBilateral(channel, DEFAULT_CONTRAST_BILATERAL);
             setContrastUnilateral(channel, DEFAULT_CONTRAST_UNILATERAL);
             setTemperature(DEFAULT_TEMPERATURE);
+            channelsInverted[channel.index] = false;
         }
+    }
+
+    void invertGammaRamp(Channel channel) {
+        System.out.println(channel + ": " + channelsInverted[channel.index] + " :: " + !channelsInverted[channel.index]);
+        channelsInverted[channel.index] = !channelsInverted[channel.index];
     }
 
     private void getDeviceGammaRamp() {
@@ -110,30 +117,40 @@ public class Gamma {
     void reinitializeGammaRamp() {
         int[][] newGammaRamp = new int[TOTAL_COLORS_COUNT][SINGLE_RAMP_COLOR_VALUES_COUNT];
         for (int y = 0; y < newGammaRamp.length; y++) {
-            for (int x = 0; x < newGammaRamp[0].length; x++) {
-                calculateRampValue(newGammaRamp, x, y);
-                normalizeRampValue(newGammaRamp, x, y);
+            if (channelsInverted[y]) {
+                for (int x = 0; x < newGammaRamp[0].length; x++) {
+                    int newGammaRampValue = calculateRampValue(newGammaRamp, x, y);
+                    newGammaRampValue = normalizeRampValue(newGammaRampValue);
+                    newGammaRamp[y][SINGLE_RAMP_COLOR_VALUES_COUNT - x - 1] = newGammaRampValue;
+                }
+            } else {
+                for (int x = 0; x < newGammaRamp[0].length; x++) {
+                    int newGammaRampValue = calculateRampValue(newGammaRamp, x, y);
+                    newGammaRampValue = normalizeRampValue(newGammaRampValue);
+                    newGammaRamp[y][x] = newGammaRampValue;
+                }
             }
         }
         setGammaRamp(newGammaRamp);
         setDeviceGammaRamp();
     }
 
-    private void calculateRampValue(int[][] newGammaRamp, int x, int y) {
+    private int calculateRampValue(int[][] newGammaRamp, int x, int y) {
         double rampValue = Math.pow((double) x / SINGLE_RAMP_COLOR_VALUES_COUNT, gamma[y]) * MAX_WORD;
         rampValue += brightness[y];
         rampValue = contrastBilateral[y] * (rampValue - MAX_HALF_WORD) + MAX_HALF_WORD;
         rampValue *= contrastUnilateral[y];
         rampValue *= temperature[y];
-        newGammaRamp[y][x] = (int) rampValue;
+        return (int) rampValue;
     }
 
-    private void normalizeRampValue(int[][] newGammaRamp, int x, int y) {
-        if (newGammaRamp[y][x] > MAX_WORD) {
-            newGammaRamp[y][x] = MAX_WORD;
-        } else if (newGammaRamp[y][x] < 0) {
-            newGammaRamp[y][x] = 0;
+    private int normalizeRampValue(int newGammaRamp) {
+        if (newGammaRamp > MAX_WORD) {
+            newGammaRamp = MAX_WORD;
+        } else if (newGammaRamp < 0) {
+            newGammaRamp = 0;
         }
+        return newGammaRamp;
     }
 
     int[][] getGammaRamp() {

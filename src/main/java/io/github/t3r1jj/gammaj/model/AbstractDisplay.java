@@ -68,6 +68,11 @@ public abstract class AbstractDisplay implements Display {
     }
 
     @Override
+    public void invertGammaRamp(Channel channel) {
+        gammaModel.invertGammaRamp(channel);
+    }
+
+    @Override
     public void reinitialize() {
         gammaModel.reinitializeGammaRamp();
     }

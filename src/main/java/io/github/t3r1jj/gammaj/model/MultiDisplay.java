@@ -32,7 +32,7 @@ public class MultiDisplay extends AbstractDisplay {
         screens.add(screen);
     }
 
-    public List<Display> getScreens() {
+    public List<Display> getDisplays() {
         return screens;
     }
 

@@ -63,6 +63,12 @@ public interface Display {
     void resetGammaRamp();
 
     /**
+     * @param channel RGB
+     * Inverts gamma ramp for selected channel
+     */
+    void invertGammaRamp(Gamma.Channel channel);
+
+    /**
      * Recalculates and sets gamma ramp based on current model
      */
     void reinitialize();

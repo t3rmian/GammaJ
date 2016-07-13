@@ -15,6 +15,7 @@
  */
 package io.github.t3r1jj.gammaj;
 
+import io.github.t3r1jj.gammaj.jna.GammaRegistry;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
