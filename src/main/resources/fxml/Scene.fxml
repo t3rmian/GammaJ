@@ -143,12 +143,12 @@ limitations under the License.
                                                                                 <Insets left="16.0" />
                                                                             </GridPane.margin>
                                                                         </Label>
-                                                                        <ComboBox prefWidth="150.0" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+                                                                        <ComboBox fx:id="profilesComboBox" prefWidth="150.0" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
                                                                             <GridPane.margin>
                                                                                 <Insets right="16.0" />
                                                                             </GridPane.margin>
                                                                         </ComboBox>
-                                                                        <TextField maxWidth="-Infinity" prefWidth="150.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+                                                                        <TextField fx:id="hotkeyTextField" editable="false" maxWidth="-Infinity" onKeyPressed="#handleOnHotkeyPressedKeyEvent" prefWidth="150.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
                                                                             <GridPane.margin>
                                                                                 <Insets />
                                                                             </GridPane.margin>

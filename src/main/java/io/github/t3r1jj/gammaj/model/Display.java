@@ -77,6 +77,18 @@ public interface Display {
      * 
      * @return normalized (0d...1d) gamma ramp for all RGB channels (256 values each)
      */
-    double[][] getGammaRamp();
+    double[][] getNormalizedGammaRamp();
+    
+    /**
+     * 
+     * @return gamma ramp for all RGB channels (256 values each from the range of 0...65535)
+     */
+    int[][] getGammaRamp();
+    
+    /**
+     * 
+     * @return RGB array of booleans isChannelInverted
+     */
+    boolean[] getInvertedChannels();
 
 }

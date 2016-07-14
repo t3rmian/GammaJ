@@ -78,8 +78,18 @@ public abstract class AbstractDisplay implements Display {
     }
 
     @Override
-    public double[][] getGammaRamp() {
-        return gammaModel.getGammaScaledRamp();
+    public double[][] getNormalizedGammaRamp() {
+        return gammaModel.getNormalizedGammaRamp();
+    }
+
+    @Override
+    public int[][] getGammaRamp() {
+        return gammaModel.getGammaRamp();
+    }
+    
+    @Override
+    public boolean[] getInvertedChannels() {
+        return gammaModel.getInvertedChannels();
     }
 
     @Override
