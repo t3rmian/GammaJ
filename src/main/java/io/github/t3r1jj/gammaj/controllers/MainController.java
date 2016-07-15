@@ -15,7 +15,7 @@
  */
 package io.github.t3r1jj.gammaj.controllers;
 
-import io.github.t3r1jj.gammaj.ColorProfile;
+import io.github.t3r1jj.gammaj.model.ColorProfile;
 import io.github.t3r1jj.gammaj.jna.HotkeyListener;
 import io.github.t3r1jj.gammaj.jna.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.model.ColorTemperature;
@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -49,7 +50,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
@@ -63,8 +63,10 @@ public class MainController implements Initializable {
 
     private Display currentDisplay;
     private final Set<Channel> selectedChannels = EnumSet.allOf(Channel.class);
-    private final List<HotkeyPollerThread> hotkeys = new ArrayList<>();
+    private final List<HotkeyPollerThread> registeredHotkeys = new ArrayList<>();
     private final List<ColorProfile> colorProfiles = new ArrayList<>();
+    private HotkeyPollerThread textFieldHotkey;
+    private boolean loadedProfile;
 
     @FXML
     private Canvas canvas;
@@ -108,7 +110,6 @@ public class MainController implements Initializable {
     private static final Paint GAMMA_CANVAS_BACKGROUND_COLOR = Color.WHITE;
     private static final Paint[] GAMMA_CANVAS_LINE_COLOR = new Paint[]{Color.RED, Color.GREEN, Color.BLUE};
     private static final double TEMPERATURE_SLIDER_DEFAULT_VALUE = 6500;
-    private HotkeyPollerThread hotkey;
 
     @FXML
     private void handleResetButtonAction(ActionEvent event) {
@@ -116,6 +117,9 @@ public class MainController implements Initializable {
         resetSliders();
         currentDisplay.resetGammaRamp();
         drawGammaLine();
+        if (loadedProfile) {
+            resetProfile();
+        }
     }
 
     @FXML
@@ -125,17 +129,20 @@ public class MainController implements Initializable {
         }
         currentDisplay.reinitialize();
         drawGammaLine();
+        if (loadedProfile) {
+            resetProfile();
+        }
     }
 
     @FXML
     private void handleOnHotkeyPressedKeyEvent(KeyEvent event) throws InterruptedException {
         try {
-            hotkey = new HotkeyPollerThread(event);
+            textFieldHotkey = new HotkeyPollerThread(event);
             hotkeyTextField.setText("");
-            hotkeyTextField.setText(hotkey.getDisplayText());
+            hotkeyTextField.setText(textFieldHotkey.getDisplayText());
         } catch (java.lang.IllegalArgumentException ex) {
             System.out.println("ILLEGAL ARGUMENT");
-            hotkey = null;
+            textFieldHotkey = null;
         }
     }
 
@@ -152,25 +159,27 @@ public class MainController implements Initializable {
                 handleSaveProfileAsButtonAction(event);
                 return;
             }
-            ColorProfile colorProfile = new ColorProfile(nameWrapper.get());
-            colorProfile.setGamma((double) gammaSpinner.getValue());
-            colorProfile.setContrastBilateral((double) contrastBilateralSpinner.getValue());
-            colorProfile.setContrastUnilateral((double) contrastUnilateralSpinner.getValue());
-            colorProfile.setBrightness((double) brightnessSpinner.getValue());
-            colorProfile.setTemperature((double) temperatureSpinner.getValue());
+//            colorProfile
+            ColorProfile colorProfile = currentDisplay.getColorProfile();
+            colorProfile.setName(nameWrapper.get());
+//            ColorProfile colorProfile = new ColorProfile(nameWrapper.get());
+            // Probably not needed
+//            colorProfile.setGamma((double) gammaSpinner.getValue());
+//            colorProfile.setContrastBilateral((double) contrastBilateralSpinner.getValue());
+//            colorProfile.setContrastUnilateral((double) contrastUnilateralSpinner.getValue());
+//            colorProfile.setBrightness((double) brightnessSpinner.getValue());
+//            colorProfile.setTemperature((double) temperatureSpinner.getValue());
             colorProfile.setModeIsAssissted(true);
-            colorProfile.setInvertedChannels(currentDisplay.getInvertedChannels());
+//            colorProfile.setInvertedChannels(currentDisplay.getInvertedChannels());
             colorProfile.setGammaRamp(currentDisplay.getGammaRamp());
-            if (hotkey != null) {
-                colorProfile.setHotkey(hotkey);
+            if (textFieldHotkey != null) {
+                colorProfile.setHotkey(textFieldHotkey);
+                registerHotkey(textFieldHotkey, colorProfile);
             }
             colorProfile.saveProfile(fullName);
             colorProfiles.add(colorProfile);
             profilesComboBox.getItems().add(colorProfile);
             profilesComboBox.getSelectionModel().select(colorProfile);
-            if (hotkey != null) {
-                registerHotkey(hotkey, colorProfile);
-            }
         }
     }
 
@@ -185,11 +194,7 @@ public class MainController implements Initializable {
         }
         for (ColorProfile colorProfile : colorProfiles) {
             if (colorProfile.getName().equals(name)) {
-                HotkeyPollerThread hotkey = colorProfile.getHotkey();
-                if (hotkey != null) {
-                    hotkey.stop();
-                }
-                removeProfileFromComboBox(colorProfile);
+                removeProfileFromApp(colorProfile);
                 return true;
             }
         }
@@ -205,19 +210,25 @@ public class MainController implements Initializable {
         Optional<ColorProfile> selectedProfile = choiceDialog.showAndWait();
         if (selectedProfile.isPresent()) {
             ColorProfile profileToDelete = selectedProfile.get();
-            removeProfileFromComboBox(profileToDelete);
+            removeProfileFromApp(profileToDelete);
             profileToDelete.deleteProfile();
         }
     }
 
-    private ColorProfile removeProfileFromComboBox(ColorProfile profileToRemove) {
+    private ColorProfile removeProfileFromApp(ColorProfile profileToRemove) {
         HotkeyPollerThread hotkeyToDelete = profileToRemove.getHotkey();
-        if (hotkeyToDelete != null) {
-            hotkeys.remove(hotkeyToDelete);
-            hotkeyToDelete.stop();
+        for (Iterator<HotkeyPollerThread> hotkeyIterator = registeredHotkeys.iterator(); hotkeyIterator.hasNext();) {
+            HotkeyPollerThread hotkey = hotkeyIterator.next();
+            if (hotkey.equals(hotkeyToDelete)) {
+                System.out.println("REMOVED " + hotkey);
+                hotkey.interrupt();
+                hotkeyIterator.remove();
+            }
         }
         colorProfiles.remove(profileToRemove);
+        HotkeyPollerThread temp = textFieldHotkey;
         profilesComboBox.getItems().remove(profileToRemove);
+        textFieldHotkey = temp;
         return profileToRemove;
     }
 
@@ -234,26 +245,16 @@ public class MainController implements Initializable {
                 if (selectedColorProfile == null) {
                     return;
                 }
+                if (!colorProfiles.contains(selectedColorProfile)) {
+                currentDisplay.setColorProfile(selectedColorProfile);
+                    System.out.println("Empty profile, ignoring...");
+                    hotkeyTextField.setText("");
+                    return;
+                }
                 System.out.println("Loading profile: " + selectedColorProfile);
-                currentDisplay.resetGammaRamp();
-                gammaSpinner.getValueFactory().setValue(selectedColorProfile.getGamma());
-                contrastBilateralSpinner.getValueFactory().setValue(selectedColorProfile.getContrastBilateral());
-                contrastUnilateralSpinner.getValueFactory().setValue(selectedColorProfile.getContrastUnilateral());
-                brightnessSpinner.getValueFactory().setValue(selectedColorProfile.getBrightness());
-                temperatureSpinner.getValueFactory().setValue(selectedColorProfile.getTemperature());
-                boolean[] invertedChannels = selectedColorProfile.getInvertedChannels();
-                for (Channel channel : Gamma.Channel.values()) {
-                    if (invertedChannels[channel.getIndex()]) {
-                        currentDisplay.invertGammaRamp(channel);
-                    }
-                }
-                HotkeyPollerThread hotkey = selectedColorProfile.getHotkey();
-                hotkeyTextField.setText("");
-                if (hotkey != null) {
-                    hotkeyTextField.setText(hotkey.getDisplayText());
-                }
-                currentDisplay.reinitialize();
-                drawGammaLine();
+//                currentDisplay.resetGammaRamp();
+                // loading same values = no change
+                loadGammaFromProfile(selectedColorProfile);
             }
         });
 
@@ -297,12 +298,23 @@ public class MainController implements Initializable {
         screenComboBox.getSelectionModel().select(currentDisplay);
 
         screenComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Display>() {
-
+// changing from "no profile" to profile (change in displays) does not load settings?
             @Override
             public void changed(ObservableValue<? extends Display> observable, Display oldValue, Display newValue) {
                 currentDisplay = newValue;
-                currentDisplay.reinitialize();
-                drawGammaLine();
+                ColorProfile colorProfile = currentDisplay.getColorProfile();
+                if (!colorProfiles.contains(colorProfile)) {
+                    System.out.println("Changed to no profile - loading gamma from no profile aka previously set settings");
+                    currentDisplay.reinitialize();
+                    profilesComboBox.getSelectionModel().select(currentDisplay.getColorProfile());
+                    loadGammaFromProfile(colorProfile);
+                    drawGammaLine();
+                } else {
+                    profilesComboBox.getSelectionModel().select(currentDisplay.getColorProfile());
+                }
+//                if (loadedProfile) {
+//                    resetProfile();
+//                }
             }
 
         });
@@ -317,6 +329,9 @@ public class MainController implements Initializable {
                 }
                 currentDisplay.reinitialize();
                 drawGammaLine();
+                if (loadedProfile) {
+                    resetProfile();
+                }
             }
 
         });
@@ -330,6 +345,9 @@ public class MainController implements Initializable {
                 }
                 currentDisplay.reinitialize();
                 drawGammaLine();
+                if (loadedProfile) {
+                    resetProfile();
+                }
             }
 
         });
@@ -343,6 +361,9 @@ public class MainController implements Initializable {
                 }
                 currentDisplay.reinitialize();
                 drawGammaLine();
+                if (loadedProfile) {
+                    resetProfile();
+                }
             }
 
         });
@@ -356,6 +377,9 @@ public class MainController implements Initializable {
                 }
                 currentDisplay.reinitialize();
                 drawGammaLine();
+                if (loadedProfile) {
+                    resetProfile();
+                }
             }
 
         });
@@ -381,6 +405,9 @@ public class MainController implements Initializable {
                 currentDisplay.setTemperature(new ColorTemperature(newValue.doubleValue()));
                 currentDisplay.reinitialize();
                 drawGammaLine();
+                if (loadedProfile) {
+                    resetProfile();
+                }
 
             }
 
@@ -393,7 +420,31 @@ public class MainController implements Initializable {
         Bindings.bindBidirectional(temperatureSlider.valueProperty(), temperatureSpinner.getValueFactory().valueProperty());
 
         drawGammaLine();
+    }
 
+    private void loadGammaFromProfile(ColorProfile colorProfile) {
+        loadedProfile = false;
+        
+        gammaSpinner.getValueFactory().setValue(colorProfile.getGamma(Channel.RED));
+        contrastBilateralSpinner.getValueFactory().setValue(colorProfile.getContrastBilateral(Channel.RED));
+        contrastUnilateralSpinner.getValueFactory().setValue(colorProfile.getContrastUnilateral(Channel.RED));
+        brightnessSpinner.getValueFactory().setValue(colorProfile.getBrightness(Channel.RED));
+        temperatureSpinner.getValueFactory().setValue(colorProfile.getTemperature());
+        boolean[] invertedChannels = colorProfile.getInvertedChannels();
+        for (Channel channel : Gamma.Channel.values()) {
+            if (invertedChannels[channel.getIndex()]) {
+                currentDisplay.invertGammaRamp(channel);
+            }
+        }
+        HotkeyPollerThread hotkey = colorProfile.getHotkey();
+        hotkeyTextField.setText("");
+        if (hotkey != null) {
+            hotkeyTextField.setText(hotkey.getDisplayText());
+            textFieldHotkey = hotkey;
+        }
+        currentDisplay.reinitialize();
+        drawGammaLine();
+        loadedProfile = true;
     }
 
     private void loadProfiles() {
@@ -409,7 +460,9 @@ public class MainController implements Initializable {
             ColorProfile colorProfile = new ColorProfile(file);
             colorProfiles.add(colorProfile);
         }
+        profilesComboBox.getItems().setAll(new ColorProfile("No profile"));
         profilesComboBox.getItems().addAll(colorProfiles);
+        profilesComboBox.getSelectionModel().selectFirst();
     }
 
     private void drawGammaLine() {
@@ -442,7 +495,7 @@ public class MainController implements Initializable {
                 colorProfile.loadProfile();
                 HotkeyPollerThread loadedHotkey = colorProfile.getHotkey();
                 if (loadedHotkey != null) {
-                    hotkeys.add(loadedHotkey);
+                    registeredHotkeys.add(loadedHotkey);
                     registerHotkey(loadedHotkey, colorProfile);
                 }
             } catch (IOException ex) {
@@ -460,6 +513,10 @@ public class MainController implements Initializable {
             }
         });
         hotkey.start();
+    }
+
+    private void resetProfile() {
+        profilesComboBox.getSelectionModel().selectFirst();
     }
 
 }

@@ -24,6 +24,12 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyCombination.ModifierValue;
 import javafx.scene.input.KeyEvent;
 
+/**
+ *
+ * Thread used to register global hotkey which input will be retrieved only by
+ * thread that registered the hotkey (same hotkey will not be sent to other
+ * applications and will appear to be non-functioning)
+ */
 public class HotkeyPollerThread extends Thread {
 
     private final int id = IdGenerator.nextId();
@@ -33,9 +39,9 @@ public class HotkeyPollerThread extends Thread {
     private HotkeyListener hotkeyListener;
 
     /**
-     * 
-     * @param keyEvent 
-     * Start thread to register global hotkey in windows, call stop() to unregister hotkey
+     *
+     * @param keyEvent Start thread to register global hotkey in windows, call
+     * interrupt() to unregister hotkey
      */
     public HotkeyPollerThread(KeyEvent keyEvent) {
         this.keyEvent = keyEvent;
@@ -76,7 +82,7 @@ public class HotkeyPollerThread extends Thread {
     public int getModifiers() {
         return modifiers;
     }
-    
+
     public KeyEvent getKeyEvent() {
         return keyEvent;
     }
@@ -100,6 +106,19 @@ public class HotkeyPollerThread extends Thread {
         }
     }
 
+    /**
+     * calls super.sleep due to no control over WinAPI call GetMessage() in
+     * run()
+     */
+    @Override
+    public void interrupt() {
+        if (isAlive()) {
+            this.stop();
+        } else {
+            throw new RuntimeException("Trying to close unstarted hotkey poller thread");
+        }
+    }
+
     private void registerHotkey() {
         System.out.println("REGISTERING HOTKEY: " + this);
         User32.INSTANCE.RegisterHotKey(null, id, getModifiers(), getVkCode());
@@ -107,6 +126,41 @@ public class HotkeyPollerThread extends Thread {
 
     public void unregisterHotkay() {
         User32.INSTANCE.UnregisterHotKey(null, id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HotkeyPollerThread other = (HotkeyPollerThread) obj;
+
+        if (keyEvent == null && other.keyEvent != null) {
+            return false;
+        }
+        if (keyEvent != null && other.keyEvent == null) {
+            return false;
+        }
+        if (keyEvent == null && other.keyEvent == null) {
+            return true;
+        }
+
+        if (keyEvent.isAltDown() != other.keyEvent.isAltDown()) {
+            return false;
+        }
+        if (keyEvent.isShiftDown() != other.keyEvent.isShiftDown()) {
+            return false;
+        }
+        if (keyEvent.isControlDown() != other.keyEvent.isControlDown()) {
+            return false;
+        }
+        if (keyEvent.isMetaDown() != other.keyEvent.isMetaDown()) {
+            return false;
+        }
+        return keyEvent.getCode() == other.keyEvent.getCode();
     }
 
     private static class IdGenerator {

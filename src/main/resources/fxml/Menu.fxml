@@ -19,6 +19,11 @@
                 <CheckMenuItem onAction="#handleTraySelectedChange" text="Tray on minimize" />
             </items>
         </Menu>
+        <Menu text="Colors">
+            <items>
+                <CheckMenuItem onAction="#handleSrgbSelectedChange" text="sRGB temperature" />
+            </items>
+        </Menu>
         <Menu text="Help">
             <items>
                 <MenuItem onAction="#handleAboutAction" text="About" />

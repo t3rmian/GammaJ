@@ -19,12 +19,24 @@ public interface Display {
 
     /**
      * 
+     * @return color profile associated with this display
+     */
+    public ColorProfile getColorProfile();
+
+    /**
+     * 
+     * @param colorProfile associated with this display
+     */
+    public void setColorProfile(ColorProfile colorProfile);
+
+    /**
+     *
      * @return name of display
      */
     String getName();
 
     /**
-     * 
+     *
      * @param channel RGB
      * @param gamma value from 0d...infinity range
      */
@@ -45,7 +57,7 @@ public interface Display {
     void setContrastBilateral(Gamma.Channel channel, double contrastBilateral);
 
     /**
-     * 
+     *
      * @param channel RGB
      * @param contrastUnilateral value from 0d...100d range, 50 = no change
      */
@@ -63,8 +75,7 @@ public interface Display {
     void resetGammaRamp();
 
     /**
-     * @param channel RGB
-     * Inverts gamma ramp for selected channel
+     * @param channel RGB Inverts gamma ramp for selected channel
      */
     void invertGammaRamp(Gamma.Channel channel);
 
@@ -74,19 +85,21 @@ public interface Display {
     void reinitialize();
 
     /**
-     * 
-     * @return normalized (0d...1d) gamma ramp for all RGB channels (256 values each)
+     *
+     * @return normalized (0d...1d) gamma ramp for all RGB channels (256 values
+     * each)
      */
     double[][] getNormalizedGammaRamp();
-    
+
     /**
-     * 
-     * @return gamma ramp for all RGB channels (256 values each from the range of 0...65535)
+     *
+     * @return gamma ramp for all RGB channels (256 values each from the range
+     * of 0...65535)
      */
     int[][] getGammaRamp();
-    
+
     /**
-     * 
+     *
      * @return RGB array of booleans isChannelInverted
      */
     boolean[] getInvertedChannels();

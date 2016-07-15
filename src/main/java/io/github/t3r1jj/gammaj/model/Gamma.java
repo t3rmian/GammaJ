@@ -29,10 +29,10 @@ public class Gamma {
     private static final int MAX_WORD = 65535;
     private static final int MAX_HALF_WORD = 32768;
 
-    private static final double DEFAULT_GAMMA = 1d;
-    private static final double DEFAULT_BRIGHTNESS = 50d;
-    private static final double DEFAULT_CONTRAST_BILATERAL = 50d;
-    private static final double DEFAULT_CONTRAST_UNILATERAL = 50d;
+    static final double DEFAULT_GAMMA = 1d;
+    static final double DEFAULT_BRIGHTNESS = 50d;
+    static final double DEFAULT_CONTRAST_BILATERAL = 50d;
+    static final double DEFAULT_CONTRAST_UNILATERAL = 50d;
     private static final double[] DEFAULT_TEMPERATURE = new double[]{1d, 1d, 1d};
 
     private final double[] gamma = new double[3];

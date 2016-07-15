@@ -23,6 +23,7 @@ public abstract class AbstractDisplay implements Display {
     protected String name;
     protected WinDef.HDC hdc;
     protected Gamma gammaModel;
+    protected ColorProfile colorProfile = new ColorProfile("No profile");
 
     protected AbstractDisplay() {
     }
@@ -32,6 +33,14 @@ public abstract class AbstractDisplay implements Display {
         this.gammaModel = new Gamma(hdc);
     }
 
+    public ColorProfile getColorProfile() {
+        return colorProfile;
+    }
+
+    public void setColorProfile(ColorProfile colorProfile) {
+        this.colorProfile = colorProfile;
+    }
+    
     @Override
     public String getName() {
         return name;
@@ -39,21 +48,25 @@ public abstract class AbstractDisplay implements Display {
 
     @Override
     public void setGamma(Channel channel, double gamma) {
+        colorProfile.setGamma(channel, gamma);
         gammaModel.setGamma(channel, gamma);;
     }
 
     @Override
     public void setBrightness(Channel channel, double brightness) {
+        colorProfile.setBrightness(channel, brightness);
         gammaModel.setBrightness(channel, brightness);
     }
 
     @Override
     public void setContrastBilateral(Channel channel, double contrast) {
+        colorProfile.setContrastBilateral(channel, contrast);
         gammaModel.setContrastBilateral(channel, contrast);
     }
 
     @Override
     public void setContrastUnilateral(Channel channel, double contrast) {
+        colorProfile.setContrastUnilateral(channel, contrast);
         gammaModel.setContrastUnilateral(channel, contrast);
     }
 
@@ -70,6 +83,7 @@ public abstract class AbstractDisplay implements Display {
     @Override
     public void invertGammaRamp(Channel channel) {
         gammaModel.invertGammaRamp(channel);
+        colorProfile.setInvertedChannels(getInvertedChannels());
     }
 
     @Override

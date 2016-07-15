@@ -65,6 +65,13 @@ public class MenuBarController implements Initializable {
     }
 
     @FXML
+    private void handleSrgbSelectedChange(ActionEvent event) {
+        CheckMenuItem srgbCheckBox = (CheckMenuItem) event.getSource();
+        boolean trayEnabled = srgbCheckBox.isSelected();
+        
+    }
+
+    @FXML
     private void handleAboutAction(ActionEvent event) {
         ProjectInfo projectInfo = new ProjectInfo();
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
