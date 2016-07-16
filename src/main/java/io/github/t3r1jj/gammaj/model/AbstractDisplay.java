@@ -15,6 +15,7 @@
  */
 package io.github.t3r1jj.gammaj.model;
 
+import io.github.t3r1jj.gammaj.model.temperature.RgbTemperature;
 import com.sun.jna.platform.win32.WinDef;
 import io.github.t3r1jj.gammaj.model.Gamma.Channel;
 
@@ -33,10 +34,12 @@ public abstract class AbstractDisplay implements Display {
         this.gammaModel = new Gamma(hdc);
     }
 
+    @Override
     public ColorProfile getColorProfile() {
         return colorProfile;
     }
 
+    @Override
     public void setColorProfile(ColorProfile colorProfile) {
         this.colorProfile = colorProfile;
     }
@@ -49,7 +52,7 @@ public abstract class AbstractDisplay implements Display {
     @Override
     public void setGamma(Channel channel, double gamma) {
         colorProfile.setGamma(channel, gamma);
-        gammaModel.setGamma(channel, gamma);;
+        gammaModel.setGamma(channel, gamma);
     }
 
     @Override
@@ -71,12 +74,14 @@ public abstract class AbstractDisplay implements Display {
     }
 
     @Override
-    public void setTemperature(ColorTemperature colorTemperature) {
-        gammaModel.setTemperature(colorTemperature.getRgb());
+    public void setTemperature(RgbTemperature colorTemperature) {
+        colorProfile.setTemperature(colorTemperature);
+        gammaModel.setTemperature(colorTemperature);
     }
 
     @Override
     public void resetGammaRamp() {
+        colorProfile.reset();
         gammaModel.resetGammaRamp();
     }
 

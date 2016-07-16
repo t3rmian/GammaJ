@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.t3r1jj.gammaj.model;
+package io.github.t3r1jj.gammaj.model.temperature;
 
-public class ColorTemperature {
+import io.github.t3r1jj.gammaj.model.Gamma;
+
+public class RgbTemperature {
 
     protected final double rgb[] = new double[3];
     private final double temperature;
@@ -30,17 +32,23 @@ public class ColorTemperature {
     public double[] getRgb() {
         return rgb;
     }
-    
-    public ColorTemperatureSrgb toSrgb() {
-        return new ColorTemperatureSrgb(temperature);
+
+    public SrgbTemperature toSrgb() {
+        return new SrgbTemperature(temperature);
     }
 
     /**
      *
      * @param temperature in Kelvin
      */
-    public ColorTemperature(double temperature) {
+    public RgbTemperature(double temperature) {
         this.temperature = temperature;
+        if (temperature == Gamma.DEFAULT_TEMPERATURE) {
+            for (int i = 0; i < rgb.length; i++) {
+                rgb[i] = 1d;
+            }
+            return;
+        }
         temperatureToXyy();
         XyyToXyz();
         XyzToRgb();
@@ -126,4 +134,13 @@ public class ColorTemperature {
         yc = 2d * v / (2d * u - 8d * v + 4d);
     }
 
+    public double getTemperature() {
+        return temperature;
+    }
+
+    @Override
+    public String toString() {
+        return "rgb";
+    }
+    
 }

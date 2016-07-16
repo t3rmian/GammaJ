@@ -15,13 +15,14 @@
  */
 package io.github.t3r1jj.gammaj.model;
 
+import io.github.t3r1jj.gammaj.model.temperature.RgbTemperature;
 import com.sun.jna.platform.win32.WinDef.HDC;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MultiDisplay extends AbstractDisplay {
 
-    private List<Display> screens = new ArrayList<>();
+    private final List<Display> screens = new ArrayList<>();
 
     public MultiDisplay(HDC hdc) {
         super(hdc);
@@ -77,10 +78,18 @@ public class MultiDisplay extends AbstractDisplay {
     }
 
     @Override
-    public void setTemperature(ColorTemperature temperature) {
+    public void setTemperature(RgbTemperature temperature) {
         super.setTemperature(temperature);
         for (Display screen : screens) {
             screen.setTemperature(temperature);
+        }
+    }
+
+    @Override
+    public void setColorProfile(ColorProfile colorProfile) {
+        super.setColorProfile(colorProfile);
+        for (Display screen : screens) {
+            screen.setColorProfile(colorProfile);
         }
     }
 

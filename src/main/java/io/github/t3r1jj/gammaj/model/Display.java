@@ -15,6 +15,8 @@
  */
 package io.github.t3r1jj.gammaj.model;
 
+import io.github.t3r1jj.gammaj.model.temperature.RgbTemperature;
+
 public interface Display {
 
     /**
@@ -67,7 +69,7 @@ public interface Display {
      *
      * @param temperature in Kelvin, value from 1000...25000 range
      */
-    void setTemperature(ColorTemperature temperature);
+    void setTemperature(RgbTemperature temperature);
 
     /**
      * Resets gamma ramp to default, linear values for all channels
@@ -103,5 +105,5 @@ public interface Display {
      * @return RGB array of booleans isChannelInverted
      */
     boolean[] getInvertedChannels();
-
+    
 }

@@ -11,6 +11,9 @@
     <menus>
         <Menu text="File">
             <items>
+                <MenuItem onAction="#handleSettingsAction" text="Settings" />
+            </items>
+            <items>
                 <MenuItem onAction="#handleExitAction" text="Exit" />
             </items>
         </Menu>
@@ -21,7 +24,10 @@
         </Menu>
         <Menu text="Colors">
             <items>
-                <CheckMenuItem onAction="#handleSrgbSelectedChange" text="sRGB temperature" />
+                <MenuItem fx:id="resetMenuItem" text="Reset" />
+            </items>
+            <items>
+                <CheckMenuItem fx:id="srgbCheckMenuItem" text="sRGB Temperature" />
             </items>
         </Menu>
         <Menu text="Help">

@@ -15,6 +15,7 @@
  */
 package io.github.t3r1jj.gammaj;
 
+import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.controllers.ApplicationControllerFactory;
 import io.github.t3r1jj.gammaj.jna.GammaRegistry;
 import javafx.application.Application;
@@ -35,7 +36,7 @@ public class GammaJ extends Application {
 
         trayManager = new TrayManager(stage);
         FXMLLoader fXMLLoader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
-        fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayManager));
+        fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayManager, HotkeysRunner.getInstance()));
         Parent root = fXMLLoader.load();
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");

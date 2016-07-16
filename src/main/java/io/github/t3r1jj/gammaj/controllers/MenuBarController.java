@@ -16,6 +16,7 @@
 package io.github.t3r1jj.gammaj.controllers;
 
 import io.github.t3r1jj.gammaj.TrayManager;
+import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.info.Library;
 import io.github.t3r1jj.gammaj.info.ProjectInfo;
 import java.awt.AWTException;
@@ -29,24 +30,56 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.HostServices;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 
 public class MenuBarController implements Initializable {
 
     private final HostServices hostServices;
     private final TrayManager trayManager;
+    private final HotkeysRunner hotkeysRunner;
+    
+    @FXML
+    private CheckMenuItem srgbCheckMenuItem;
+    
+    @FXML
+    private MenuItem resetMenuItem;
 
-    public MenuBarController(HostServices hostServices, TrayManager trayManager) {
+    public MenuBarController(HostServices hostServices, TrayManager trayManager, HotkeysRunner hotkeysRunner) {
         this.hostServices = hostServices;
         this.trayManager = trayManager;
+        this.hotkeysRunner = hotkeysRunner;
     }
 
+    public BooleanProperty srgbSelectedProperty(){
+        return srgbCheckMenuItem.selectedProperty();
+    }
+
+    public void setOnResetEventHandler(EventHandler<ActionEvent> handler){
+        resetMenuItem.setOnAction(handler);
+    }
+    
+    @FXML
+    private void handleSettingsAction(ActionEvent event) {
+        TextInputDialog textDialog = new TextInputDialog();
+        textDialog.setTitle("Settings");
+        textDialog.setHeaderText(null);
+        textDialog.setContentText("Reset gobal hotkey");
+        TextField editor = textDialog.getEditor();
+        editor.setEditable(false);
+    }
+    
     @FXML
     private void handleExitAction(ActionEvent event) {
         Platform.exit();
@@ -64,12 +97,6 @@ public class MenuBarController implements Initializable {
         }
     }
 
-    @FXML
-    private void handleSrgbSelectedChange(ActionEvent event) {
-        CheckMenuItem srgbCheckBox = (CheckMenuItem) event.getSource();
-        boolean trayEnabled = srgbCheckBox.isSelected();
-        
-    }
 
     @FXML
     private void handleAboutAction(ActionEvent event) {

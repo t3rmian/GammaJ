@@ -15,6 +15,7 @@
  */
 package io.github.t3r1jj.gammaj.model;
 
+import io.github.t3r1jj.gammaj.model.temperature.RgbTemperature;
 import java.util.Arrays;
 import java.util.Collection;
 import static org.hamcrest.CoreMatchers.is;
@@ -32,7 +33,7 @@ public class ColorTemperatureTest {
 
         RED, GREEN, BLUE
     };
-    private static final double delta = 0.05;
+    private static final double delta = 0.06;
 
     private final Channel channel;
     private final double temperature;
@@ -69,7 +70,7 @@ public class ColorTemperatureTest {
     @Test
     public void testGetRgb_Red() {
         Assume.assumeThat(Channel.RED, is(channel));
-        ColorTemperature instance = new ColorTemperature(temperature);
+        RgbTemperature instance = new RgbTemperature(temperature);
         double result = instance.getRgb()[0];
         System.out.println(Arrays.toString(instance.getRgb()));
         assertEquals("Temp " + temperature + ":", expected, result, delta);
@@ -78,7 +79,7 @@ public class ColorTemperatureTest {
     @Test
     public void testGetRgb_Green() {
         Assume.assumeThat(Channel.GREEN, is(channel));
-        ColorTemperature instance = new ColorTemperature(temperature);
+        RgbTemperature instance = new RgbTemperature(temperature);
         double result = instance.getRgb()[1];
         System.out.println(Arrays.toString(instance.getRgb()));
         assertEquals("Temp " + temperature + ":", expected, result, delta);
@@ -87,7 +88,7 @@ public class ColorTemperatureTest {
     @Test
     public void testGetRgb_Blue() {
         Assume.assumeThat(Channel.BLUE, is(channel));
-        ColorTemperature instance = new ColorTemperature(temperature);
+        RgbTemperature instance = new RgbTemperature(temperature);
         double result = instance.getRgb()[2];
         System.out.println(Arrays.toString(instance.getRgb()));
         assertEquals("Temp " + temperature + ":", expected, result, delta);

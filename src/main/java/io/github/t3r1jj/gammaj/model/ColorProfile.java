@@ -15,12 +15,10 @@
  */
 package io.github.t3r1jj.gammaj.model;
 
-import io.github.t3r1jj.gammaj.jna.HotkeyPollerThread;
+import io.github.t3r1jj.gammaj.model.temperature.RgbTemperature;
+import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.model.Gamma.Channel;
-import static io.github.t3r1jj.gammaj.model.Gamma.DEFAULT_BRIGHTNESS;
-import static io.github.t3r1jj.gammaj.model.Gamma.DEFAULT_CONTRAST_BILATERAL;
-import static io.github.t3r1jj.gammaj.model.Gamma.DEFAULT_CONTRAST_UNILATERAL;
-import static io.github.t3r1jj.gammaj.model.Gamma.DEFAULT_GAMMA;
+import io.github.t3r1jj.gammaj.model.temperature.TemperatureSimpleFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,36 +26,58 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.BiConsumer;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
     // ?? should I make default properties for app start?
-public class ColorProfile {
+public class ColorProfile implements Cloneable {
 
-    private final Properties properties = new Properties();
+    private final Properties properties;
     private String name;
     private File file;
 
+    /**
+     *
+     * @param name empty string initializes with default settings
+     */
     public ColorProfile(String name) {
+        this.properties = new Properties();
         this.name = name;
+        if ("".equals(name)) {
+            initializeProperties();
+        }
+    }
 
+    private void initializeProperties() {
         for (Channel channel : Channel.values()) {
-            setGamma(channel, DEFAULT_GAMMA);
-            setBrightness(channel, DEFAULT_BRIGHTNESS);
-            setContrastBilateral(channel, DEFAULT_CONTRAST_BILATERAL);
-            setContrastUnilateral(channel, DEFAULT_CONTRAST_UNILATERAL);
-            setTemperature(6500);
+            setGamma(channel, Gamma.DEFAULT_GAMMA);
+            setBrightness(channel, Gamma.DEFAULT_BRIGHTNESS);
+            setContrastBilateral(channel, Gamma.DEFAULT_CONTRAST_BILATERAL);
+            setContrastUnilateral(channel, Gamma.DEFAULT_CONTRAST_UNILATERAL);
+            setTemperature(new RgbTemperature(Gamma.DEFAULT_TEMPERATURE));
             setInvertedChannels(new boolean[]{false, false, false});
         }
     }
 
     /**
+     * call loadProfile to initialize this object with data from pointed file
      *
-     * @param file call loadProfile to initialize this object with data
+     * @param file
      */
     public ColorProfile(File file) {
+        this.properties = new Properties();
         this.file = file;
         this.name = file.getName().replaceFirst("[.][^.]+$", "");
+    }
+
+    public ColorProfile(String name, Properties properties) {
+        this.name = name;
+        this.properties = properties;
+    }
+
+    boolean isLoadedFromFile() {
+        return file != null;
     }
 
     public String getName() {
@@ -66,6 +86,24 @@ public class ColorProfile {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public ColorProfile cloneOrSame(String name) {
+        if (this.name.equals(name)) {
+            return this;
+        } else {
+            final Properties clonedProperties = new Properties();
+            properties.forEach(new BiConsumer<Object, Object>() {
+
+                @Override
+                public void accept(Object key, Object value) {
+                    System.out.println("k:" + key + " v:" + value);
+                    clonedProperties.put(key, value);
+                }
+            });
+            ColorProfile clonedProfile = new ColorProfile(name, clonedProperties);
+            return clonedProfile;
+        }
     }
 
     public double getGamma(Channel channel) {
@@ -100,12 +138,17 @@ public class ColorProfile {
         properties.setProperty("brightness_" + channel.toString().toLowerCase(), String.valueOf(brightness));
     }
 
-    public double getTemperature() {
-        return Double.parseDouble(properties.getProperty("temperature"));
+    public RgbTemperature getTemperature() {
+        return new TemperatureSimpleFactory(properties.getProperty("temperature_correction")).createTemperature(Double.parseDouble(properties.getProperty("temperature")));
     }
 
-    public void setTemperature(double temperature) {
-        properties.setProperty("temperature", String.valueOf(temperature));
+    public void setTemperature(RgbTemperature temperature) {
+        properties.setProperty("temperature", String.valueOf(temperature.getTemperature()));
+        properties.setProperty("temperature_correction", temperature.toString());
+    }
+
+    public boolean isTemperatureSrgb() {
+        return new TemperatureSimpleFactory(properties.getProperty("temperature_correction")).isIsSrgb();
     }
 
     public boolean[] getInvertedChannels() {
@@ -123,8 +166,8 @@ public class ColorProfile {
     }
 
     public int[][] getGammaRamp() {
-        int[][] gammaRamp = new int[Gamma.TOTAL_COLORS_COUNT][Gamma.SINGLE_RAMP_CHANNEL_VALUES_COUNT];
-        for (int y = 0; y < Gamma.TOTAL_COLORS_COUNT; y++) {
+        int[][] gammaRamp = new int[Gamma.CHANNELS_COUNT][Gamma.CHANNEL_VALUES_COUNT];
+        for (int y = 0; y < Gamma.CHANNELS_COUNT; y++) {
             int x = 0;
             for (String gammaRampValueString : properties.getProperty(Gamma.Channel.getChannel(y).toString().toLowerCase() + "_ramp")
                     .replace(" ", "").split(",")) {
@@ -153,27 +196,34 @@ public class ColorProfile {
 
     /**
      *
-     * @return returns unregistered key or null if no key has been specified in
-     * profile
+     * @return unregistered key or null if no key has been specified in profile
      */
     public HotkeyPollerThread getHotkey() {
         String keyPrefix = "hotkey_";
-        String keyCode = properties.getProperty(keyPrefix + "key_code");
-        if (keyCode == null) {
+        boolean isHotkeySet = Boolean.parseBoolean(properties.getProperty(keyPrefix + "on"));
+        if (!isHotkeySet) {
             return null;
         }
-        keyCode = keyCode.toUpperCase();
+        String keyCode = properties.getProperty(keyPrefix + "key_code").toUpperCase();
         boolean isShiftDown = Boolean.parseBoolean(properties.getProperty(keyPrefix + "is_shift_down", "false"));
         boolean isAltDown = Boolean.parseBoolean(properties.getProperty(keyPrefix + "is_alt_down", "false"));
         boolean isMetaDown = Boolean.parseBoolean(properties.getProperty(keyPrefix + "is_win_down", "false"));
         boolean isControlDown = Boolean.parseBoolean(properties.getProperty(keyPrefix + "is_ctrl_down", "false"));
         KeyEvent keyEvent = new KeyEvent(null, null, null, null, null, KeyCode.valueOf(keyCode), isShiftDown, isControlDown, isAltDown, isMetaDown);
-        HotkeyPollerThread hotkey = new HotkeyPollerThread(keyEvent);
-        return hotkey;
+        try {
+            return new HotkeyPollerThread(keyEvent);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     public void setHotkey(HotkeyPollerThread hotkey) {
         String keyPrefix = "hotkey_";
+        boolean isHotkeySet = hotkey != null;
+        properties.setProperty(keyPrefix + "on", String.valueOf(hotkey != null));
+        if (!isHotkeySet) {
+            return;
+        }
         KeyEvent keyEvent = hotkey.getKeyEvent();
         properties.setProperty(keyPrefix + "key_code", keyEvent.getCode().toString());
         properties.setProperty(keyPrefix + "is_alt_down", String.valueOf(keyEvent.isAltDown()));
@@ -201,6 +251,21 @@ public class ColorProfile {
 
     public void loadProfile() throws FileNotFoundException, IOException {
         properties.load(new FileInputStream(file));
+        testSyntax();
+    }
+
+    private void testSyntax() {
+        for (Channel channel : Channel.values()) {
+            getBrightness(channel);
+            getContrastBilateral(channel);
+            getContrastUnilateral(channel);
+            getGamma(channel);
+        }
+        getGammaRamp();
+        getInvertedChannels();
+        getModeIsAssissted();
+        getTemperature();
+        isTemperatureSrgb();
     }
 
     @Override
@@ -228,6 +293,10 @@ public class ColorProfile {
     @Override
     public String toString() {
         return name;
+    }
+
+    void reset() {
+        initializeProperties();
     }
 
     public static class GammaRampParsingException extends NumberFormatException {

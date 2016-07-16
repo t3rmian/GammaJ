@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.t3r1jj.gammaj.jna;
+package io.github.t3r1jj.gammaj.hotkeys;
 
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinUser;
 import static com.sun.jna.platform.win32.WinUser.WM_HOTKEY;
 import javafx.application.Platform;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyCombination.ModifierValue;
@@ -32,6 +33,7 @@ import javafx.scene.input.KeyEvent;
  */
 public class HotkeyPollerThread extends Thread {
 
+    private final static int[] UNSUPPORTED_VK_CODES = new int[]{61};
     private final int id = IdGenerator.nextId();
     private final KeyEvent keyEvent;
     private final KeyCombination keyCombination;
@@ -39,12 +41,20 @@ public class HotkeyPollerThread extends Thread {
     private HotkeyListener hotkeyListener;
 
     /**
+     * Start thread to register global hotkey in windows, call interrupt() to
+     * unregister hotkey.
      *
-     * @param keyEvent Start thread to register global hotkey in windows, call
-     * interrupt() to unregister hotkey
+     * @param keyEvent
+     * @throws IllegalArgumentException if key defined by key code (KeyEvent) is
+     * not supported
      */
     public HotkeyPollerThread(KeyEvent keyEvent) {
         this.keyEvent = keyEvent;
+        for (UnsupportedVkCodes unsupportedKeyCode : UnsupportedVkCodes.values()) {
+            if (keyEvent.getCode().impl_getCode() == unsupportedKeyCode.getCode()) {
+                throw new IllegalArgumentException("Unsupported keycode, value: " + unsupportedKeyCode.getCode());
+            }
+        }
         ModifierValue[] modifierValues = new ModifierValue[5];
         modifierValues[0] = (keyEvent.isShiftDown()) ? ModifierValue.DOWN : ModifierValue.ANY;
         modifierValues[1] = (keyEvent.isControlDown()) ? ModifierValue.DOWN : ModifierValue.ANY;
@@ -65,6 +75,10 @@ public class HotkeyPollerThread extends Thread {
             modifiers |= WinUser.MOD_WIN;
         }
         modifiers |= WinUser.MOD_NOREPEAT;
+    }
+
+    public HotkeyListener getHotkeyListener() {
+        return hotkeyListener;
     }
 
     public void setHotkeyListener(HotkeyListener hotkeyListener) {
@@ -107,12 +121,13 @@ public class HotkeyPollerThread extends Thread {
     }
 
     /**
-     * calls super.sleep due to no control over WinAPI call GetMessage() in
+     * calls super.stop due to no control over WinAPI call GetMessage() in
      * run()
      */
     @Override
     public void interrupt() {
         if (isAlive()) {
+            System.out.println("TRUE REMOVAL");
             this.stop();
         } else {
             throw new RuntimeException("Trying to close unstarted hotkey poller thread");
@@ -120,7 +135,7 @@ public class HotkeyPollerThread extends Thread {
     }
 
     private void registerHotkey() {
-        System.out.println("REGISTERING HOTKEY: " + this);
+        System.out.println("REGISTERING HOTKEY: " + this + " VK: " + getVkCode());
         User32.INSTANCE.RegisterHotKey(null, id, getModifiers(), getVkCode());
     }
 
@@ -175,6 +190,26 @@ public class HotkeyPollerThread extends Thread {
     @Override
     public String toString() {
         return "Hotkey{" + getDisplayText() + '}';
+    }
+
+    private enum UnsupportedVkCodes {
+
+        EQUALS(61), ESCAPE(KeyCode.ESCAPE);
+
+        private final int code;
+
+        private UnsupportedVkCodes(int code) {
+            this.code = code;
+        }
+
+        private UnsupportedVkCodes(KeyCode keyCode) {
+            this.code = keyCode.impl_getCode();
+        }
+
+        public int getCode() {
+            return code;
+        }
+
     }
 
 }

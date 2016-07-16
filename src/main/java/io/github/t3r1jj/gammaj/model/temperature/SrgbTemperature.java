@@ -13,8 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.t3r1jj.gammaj.jna;
+package io.github.t3r1jj.gammaj.model.temperature;
 
-public interface HotkeyListener {
-    void hotkeyPressed();
+public class SrgbTemperature extends RgbTemperature {
+
+    private static final double A = 0.055;
+    private static final double GAMMA = 2.4;
+
+    public SrgbTemperature(double temperature) {
+        super(temperature);
+        calculateSrgb();
+    }
+
+    private void calculateSrgb() {
+        for (int i = 0; i < 3; i++) {
+            rgb[i] = (rgb[i] <= 0.0031308) ? rgb[i] * 12.92 : 1.055 * Math.pow(rgb[i], 1d / GAMMA) - A;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "srgb";
+    }
 }
