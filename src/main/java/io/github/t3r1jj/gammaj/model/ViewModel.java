@@ -1,12 +1,12 @@
 package io.github.t3r1jj.gammaj.model;
 
 import com.sun.javafx.collections.ObservableListWrapper;
+import io.github.t3r1jj.gammaj.GammaRampPainter;
 import io.github.t3r1jj.gammaj.controllers.SceneController;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyListener;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.hotkeys.ProfileHotkeyListener;
-import io.github.t3r1jj.gammaj.model.temperature.TemperatureSimpleFactory;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -41,6 +41,7 @@ public class ViewModel {
     private final BooleanProperty detachDisplay = new SimpleBooleanProperty(false);
     private final BooleanProperty reset = new SimpleBooleanProperty(true);
     private final BooleanProperty isSrgb = new SimpleBooleanProperty(false);
+    private final GammaRampPainter gammaRampPainter = new GammaRampPainter();
 
     private ViewModel() {
         selectedChannels.set(FXCollections.observableSet(Gamma.Channel.values()));
@@ -191,6 +192,10 @@ public class ViewModel {
 
     public BooleanProperty getIsSrgbProperty() {
         return isSrgb;
+    }
+
+    public GammaRampPainter getGammaRampPainter() {
+        return gammaRampPainter;
     }
 
 }
