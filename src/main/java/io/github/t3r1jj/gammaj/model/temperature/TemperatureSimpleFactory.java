@@ -5,8 +5,15 @@ public class TemperatureSimpleFactory {
     private String type;
     private boolean isSrgb;
     
+    public TemperatureSimpleFactory() {
+    }
+    
     public TemperatureSimpleFactory(String type) {
         this.type = type;
+    }
+
+    public TemperatureSimpleFactory(boolean isSrgb) {
+        this.isSrgb = isSrgb;
     }
 
     public void setType(String type) {

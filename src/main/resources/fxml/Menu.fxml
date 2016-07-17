@@ -24,7 +24,7 @@
         </Menu>
         <Menu text="Colors">
             <items>
-                <MenuItem fx:id="resetMenuItem" text="Reset" />
+                <MenuItem fx:id="resetMenuItem" text="Reset" onAction="#handleResetAction" />
             </items>
             <items>
                 <CheckMenuItem fx:id="srgbCheckMenuItem" text="sRGB Temperature" />

@@ -16,9 +16,12 @@
 package io.github.t3r1jj.gammaj.controllers;
 
 import io.github.t3r1jj.gammaj.TrayManager;
+import io.github.t3r1jj.gammaj.hotkeys.HotkeyInputEventHandler;
+import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.info.Library;
 import io.github.t3r1jj.gammaj.info.ProjectInfo;
+import io.github.t3r1jj.gammaj.model.ViewModel;
 import java.awt.AWTException;
 import java.io.IOException;
 import java.net.URL;
@@ -30,8 +33,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.HostServices;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -39,20 +42,27 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.GridPane;
 
 public class MenuBarController implements Initializable {
 
+    ViewModel viewModel = ViewModel.getInstance();
     private final HostServices hostServices;
     private final TrayManager trayManager;
     private final HotkeysRunner hotkeysRunner;
-    
+
+    private HotkeyInputEventHandler hotkeyInput;
+
     @FXML
     private CheckMenuItem srgbCheckMenuItem;
-    
+
     @FXML
     private MenuItem resetMenuItem;
 
@@ -62,24 +72,80 @@ public class MenuBarController implements Initializable {
         this.hotkeysRunner = hotkeysRunner;
     }
 
-    public BooleanProperty srgbSelectedProperty(){
-        return srgbCheckMenuItem.selectedProperty();
+    public void handleResetAction(ActionEvent event) {
+        viewModel.getResetProperty().setValue(!viewModel.getResetProperty().get());
     }
 
-    public void setOnResetEventHandler(EventHandler<ActionEvent> handler){
-        resetMenuItem.setOnAction(handler);
-    }
-    
     @FXML
     private void handleSettingsAction(ActionEvent event) {
-        TextInputDialog textDialog = new TextInputDialog();
-        textDialog.setTitle("Settings");
-        textDialog.setHeaderText(null);
-        textDialog.setContentText("Reset gobal hotkey");
-        TextField editor = textDialog.getEditor();
-        editor.setEditable(false);
+        Alert settingsAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        settingsAlert.setTitle("Settings");
+        settingsAlert.setHeaderText(null);
+        final TextField hotkeyTextField = new TextField();
+        hotkeyTextField.setEditable(false);
+        HotkeyPollerThread resetHotkey = viewModel.getHotkeysRunner().getApplicationHotkey();
+        hotkeyInput = new HotkeyInputEventHandler(hotkeyTextField);
+        hotkeyInput.setHotkey(resetHotkey);
+        settingsAlert.getDialogPane().getScene().setOnKeyPressed(new EventHandler<KeyEvent>() {
+
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode() == KeyCode.ESCAPE) {
+                    event.consume();
+                    if (hotkeyTextField.focusedProperty().get()) {
+                        hotkeyInput.setHotkey(null);
+                    }
+                }
+            }
+        });
+        hotkeyTextField.setOnKeyPressed(hotkeyInput);
+        Label hotkeyLabel = new Label("Reset global hotkey:  ");
+        CheckBox detachDisplaysCheckBox = new CheckBox("Displays detached from whole screen");
+        detachDisplaysCheckBox.setSelected(viewModel.getDetachDisplay().get());
+        viewModel.getDetachDisplay().bind(detachDisplaysCheckBox.selectedProperty());
+        GridPane outPane = new GridPane();
+        outPane.setMaxWidth(Double.MAX_VALUE);
+        outPane.setMaxHeight(Double.MAX_VALUE);
+        GridPane contentPane = new GridPane();
+        contentPane.setMaxWidth(Double.MAX_VALUE);
+        contentPane.setMaxHeight(Double.MAX_VALUE);
+        contentPane.add(hotkeyLabel, 0, 0);
+        contentPane.add(hotkeyTextField, 1, 0);
+        outPane.add(contentPane, 0, 0);
+        outPane.add(new Label(), 0, 1);
+        outPane.add(detachDisplaysCheckBox, 0, 2);
+        settingsAlert.getDialogPane().contentProperty().set(outPane);
+        Optional<ButtonType> result = settingsAlert.showAndWait();
+        if (result.get().equals(ButtonType.OK)) {
+            handleHotkeyChange(event, resetHotkey);
+        }
+        hotkeyInput = null;
     }
-    
+
+    private void handleHotkeyChange(ActionEvent event, HotkeyPollerThread resetHotkey) {
+        HotkeyPollerThread newHotkey = hotkeyInput.getHotkey();
+        if (newHotkey == null) {
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.setTitle("Hotkey not changed");
+            errorAlert.setHeaderText(null);
+            errorAlert.setContentText("Hotkey must not be empty in case of setting or loading entirely black/white profile you would not be able to reset it without system restart.");
+            errorAlert.showAndWait();
+            handleSettingsAction(event);
+        } else if (viewModel.getHotkeysRunner().isRegisteredOnProfile(newHotkey)) {
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.setTitle("Hotkey not changed");
+            errorAlert.setHeaderText(null);
+            errorAlert.setContentText("Hotkey \"" + newHotkey.getDisplayText()
+                    + "\" has not been registered because it is already assigned to profile \""
+                    + viewModel.getHotkeysRunner().registeredProfileInfo(newHotkey) + "\"");
+            errorAlert.showAndWait();
+            handleSettingsAction(event);
+        } else if (!resetHotkey.equals(newHotkey)) {
+            newHotkey.setHotkeyListener(resetHotkey.getHotkeyListener());
+            viewModel.getHotkeysRunner().reregisterApplicationHotkey(newHotkey);
+        }
+    }
+
     @FXML
     private void handleExitAction(ActionEvent event) {
         Platform.exit();
@@ -96,7 +162,6 @@ public class MenuBarController implements Initializable {
             Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
 
     @FXML
     private void handleAboutAction(ActionEvent event) {
@@ -154,6 +219,14 @@ public class MenuBarController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        srgbCheckMenuItem.selectedProperty().bindBidirectional(viewModel.getIsSrgbProperty());
+        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean isNowAssisted) {
+                srgbCheckMenuItem.setDisable(!isNowAssisted);
+            }
+        });
     }
 
 }

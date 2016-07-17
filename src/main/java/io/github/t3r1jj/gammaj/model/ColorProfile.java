@@ -32,7 +32,7 @@ import javafx.scene.input.KeyEvent;
 
     // ?? should I make default properties for app start?
 public class ColorProfile implements Cloneable {
-
+    
     private final Properties properties;
     private String name;
     private File file;
@@ -48,16 +48,17 @@ public class ColorProfile implements Cloneable {
             initializeProperties();
         }
     }
-
+    
     private void initializeProperties() {
         for (Channel channel : Channel.values()) {
             setGamma(channel, Gamma.DEFAULT_GAMMA);
             setBrightness(channel, Gamma.DEFAULT_BRIGHTNESS);
             setContrastBilateral(channel, Gamma.DEFAULT_CONTRAST_BILATERAL);
             setContrastUnilateral(channel, Gamma.DEFAULT_CONTRAST_UNILATERAL);
-            setTemperature(new RgbTemperature(Gamma.DEFAULT_TEMPERATURE));
             setInvertedChannels(new boolean[]{false, false, false});
         }
+        setTemperature(new RgbTemperature(Gamma.DEFAULT_TEMPERATURE));
+        setModeIsAssissted(true);
     }
 
     /**
@@ -70,87 +71,91 @@ public class ColorProfile implements Cloneable {
         this.file = file;
         this.name = file.getName().replaceFirst("[.][^.]+$", "");
     }
-
+    
     public ColorProfile(String name, Properties properties) {
         this.name = name;
         this.properties = properties;
     }
-
+    
     boolean isLoadedFromFile() {
         return file != null;
     }
-
+    
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public ColorProfile cloneOrSame(String name) {
         if (this.name.equals(name)) {
             return this;
         } else {
-            final Properties clonedProperties = new Properties();
-            properties.forEach(new BiConsumer<Object, Object>() {
-
-                @Override
-                public void accept(Object key, Object value) {
-                    System.out.println("k:" + key + " v:" + value);
-                    clonedProperties.put(key, value);
-                }
-            });
-            ColorProfile clonedProfile = new ColorProfile(name, clonedProperties);
-            return clonedProfile;
+            return clone(name);
         }
     }
-
+    
+    public ColorProfile clone(String name) {
+        final Properties clonedProperties = new Properties();
+        properties.forEach(new BiConsumer<Object, Object>() {
+            
+            @Override
+            public void accept(Object key, Object value) {
+                System.out.println("k:" + key + " v:" + value);
+                clonedProperties.put(key, value);
+            }
+        });
+        ColorProfile clonedProfile = new ColorProfile(name, clonedProperties);
+        return clonedProfile;
+    }
+    
     public double getGamma(Channel channel) {
         return Double.parseDouble(properties.getProperty("gamma_" + channel.toString().toLowerCase()));
     }
-
+    
     public void setGamma(Channel channel, double gamma) {
         properties.setProperty("gamma_" + channel.toString().toLowerCase(), String.valueOf(gamma));
     }
-
+    
     public double getContrastUnilateral(Channel channel) {
         return Double.parseDouble(properties.getProperty("contrast_unilateral_" + channel.toString().toLowerCase()));
     }
-
+    
     public void setContrastUnilateral(Channel channel, double contrastUnilateral) {
         properties.setProperty("contrast_unilateral_" + channel.toString().toLowerCase(), String.valueOf(contrastUnilateral));
     }
-
+    
     public double getContrastBilateral(Channel channel) {
         return Double.parseDouble(properties.getProperty("contrast_bilateral_" + channel.toString().toLowerCase()));
     }
-
+    
     public void setContrastBilateral(Channel channel, double contrastBilateral) {
         properties.setProperty("contrast_bilateral_" + channel.toString().toLowerCase(), String.valueOf(contrastBilateral));
     }
-
+    
     public double getBrightness(Channel channel) {
         return Double.parseDouble(properties.getProperty("brightness_" + channel.toString().toLowerCase()));
     }
-
+    
     public void setBrightness(Channel channel, double brightness) {
         properties.setProperty("brightness_" + channel.toString().toLowerCase(), String.valueOf(brightness));
     }
-
+    
     public RgbTemperature getTemperature() {
         return new TemperatureSimpleFactory(properties.getProperty("temperature_correction")).createTemperature(Double.parseDouble(properties.getProperty("temperature")));
     }
-
+    
     public void setTemperature(RgbTemperature temperature) {
         properties.setProperty("temperature", String.valueOf(temperature.getTemperature()));
         properties.setProperty("temperature_correction", temperature.toString());
     }
-
+    
     public boolean isTemperatureSrgb() {
         return new TemperatureSimpleFactory(properties.getProperty("temperature_correction")).isIsSrgb();
     }
-
+    
     public boolean[] getInvertedChannels() {
         boolean[] invertedChannels = new boolean[Gamma.Channel.values().length];
         for (Gamma.Channel channel : Gamma.Channel.values()) {
@@ -158,13 +163,13 @@ public class ColorProfile implements Cloneable {
         }
         return invertedChannels;
     }
-
+    
     public void setInvertedChannels(boolean[] invertedChannels) {
         for (Gamma.Channel channel : Gamma.Channel.values()) {
             properties.setProperty(channel.toString().toLowerCase() + "_inverted", String.valueOf(invertedChannels[channel.getIndex()]));
         }
     }
-
+    
     public int[][] getGammaRamp() {
         int[][] gammaRamp = new int[Gamma.CHANNELS_COUNT][Gamma.CHANNEL_VALUES_COUNT];
         for (int y = 0; y < Gamma.CHANNELS_COUNT; y++) {
@@ -182,7 +187,7 @@ public class ColorProfile implements Cloneable {
         }
         return gammaRamp;
     }
-
+    
     public void setGammaRamp(int[][] gammaRamp) {
         for (int y = 0; y < gammaRamp.length; y++) {
             StringBuilder stringBuilder = new StringBuilder();
@@ -216,7 +221,7 @@ public class ColorProfile implements Cloneable {
             return null;
         }
     }
-
+    
     public void setHotkey(HotkeyPollerThread hotkey) {
         String keyPrefix = "hotkey_";
         boolean isHotkeySet = hotkey != null;
@@ -231,29 +236,29 @@ public class ColorProfile implements Cloneable {
         properties.setProperty(keyPrefix + "is_win_down", String.valueOf(keyEvent.isMetaDown()));
         properties.setProperty(keyPrefix + "is_shift_down", String.valueOf(keyEvent.isShiftDown()));
     }
-
+    
     public boolean getModeIsAssissted() {
         return Boolean.parseBoolean(properties.getProperty("mode"));
     }
-
+    
     public void setModeIsAssissted(boolean isAssisted) {
         properties.setProperty("mode", String.valueOf(isAssisted));
     }
-
+    
     public void saveProfile(String path) throws IOException {
         file = new File(path);
         properties.store(new FileOutputStream(file), name);
     }
-
+    
     public void deleteProfile() {
         file.delete();
     }
-
+    
     public void loadProfile() throws FileNotFoundException, IOException {
         properties.load(new FileInputStream(file));
         testSyntax();
     }
-
+    
     private void testSyntax() {
         for (Channel channel : Channel.values()) {
             getBrightness(channel);
@@ -267,14 +272,14 @@ public class ColorProfile implements Cloneable {
         getTemperature();
         isTemperatureSrgb();
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 59 * hash + Objects.hashCode(this.name);
         return hash;
     }
-
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -289,21 +294,21 @@ public class ColorProfile implements Cloneable {
         }
         return true;
     }
-
+    
     @Override
     public String toString() {
         return name;
     }
-
+    
     void reset() {
         initializeProperties();
     }
-
+    
     public static class GammaRampParsingException extends NumberFormatException {
-
+        
         public GammaRampParsingException(String message) {
             super(message);
         }
-
+        
     }
 }

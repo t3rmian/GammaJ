@@ -20,13 +20,13 @@ import io.github.t3r1jj.gammaj.model.temperature.RgbTemperature;
 public interface Display {
 
     /**
-     * 
+     *
      * @return color profile associated with this display
      */
     public ColorProfile getColorProfile();
 
     /**
-     * 
+     *
      * @param colorProfile associated with this display
      */
     public void setColorProfile(ColorProfile colorProfile);
@@ -105,5 +105,11 @@ public interface Display {
      * @return RGB array of booleans isChannelInverted
      */
     boolean[] getInvertedChannels();
-    
+
+    /**
+     * 
+     * @param useRamp loads only gamma ramp values
+     */
+    void loadModelFromProfile(boolean useRamp);
+
 }

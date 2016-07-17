@@ -1,22 +1,21 @@
 package io.github.t3r1jj.gammaj.hotkeys;
 
-import io.github.t3r1jj.gammaj.hotkeys.HotkeyListener;
 import io.github.t3r1jj.gammaj.model.ColorProfile;
-import javafx.scene.control.ComboBox;
+import javafx.beans.property.ObjectProperty;
 
 public class ProfileHotkeyListener implements HotkeyListener{
     
-    private final ComboBox profilesComboBox;
+    private final ObjectProperty<ColorProfile> currentProfile;
     private final ColorProfile colorProfile;
 
-    public ProfileHotkeyListener(ComboBox profilesComboBox, ColorProfile colorProfile) {
-        this.profilesComboBox = profilesComboBox;
+    public ProfileHotkeyListener(ObjectProperty<ColorProfile> currentProfile, ColorProfile colorProfile) {
+        this.currentProfile = currentProfile;
         this.colorProfile = colorProfile;
     }
 
     @Override
     public void hotkeyPressed() {
-        profilesComboBox.getSelectionModel().select(colorProfile);
+        currentProfile.set(colorProfile);
     }
 
     @Override

@@ -24,7 +24,7 @@ public abstract class AbstractDisplay implements Display {
     protected String name;
     protected WinDef.HDC hdc;
     protected Gamma gammaModel;
-    protected ColorProfile colorProfile = new ColorProfile("No profile");
+    protected ColorProfile colorProfile = new ColorProfile("");
 
     protected AbstractDisplay() {
     }
@@ -43,7 +43,7 @@ public abstract class AbstractDisplay implements Display {
     public void setColorProfile(ColorProfile colorProfile) {
         this.colorProfile = colorProfile;
     }
-    
+
     @Override
     public String getName() {
         return name;
@@ -105,10 +105,31 @@ public abstract class AbstractDisplay implements Display {
     public int[][] getGammaRamp() {
         return gammaModel.getGammaRamp();
     }
-    
+
     @Override
     public boolean[] getInvertedChannels() {
         return gammaModel.getInvertedChannels();
+    }
+
+    public void loadModelFromProfile(boolean useRamp) {
+        if (useRamp) {
+            gammaModel.setGammaRamp(colorProfile.getGammaRamp());
+        } else {
+            for (Channel channel : Channel.values()) {
+                gammaModel.setBrightness(channel, colorProfile.getBrightness(channel));
+                gammaModel.setContrastBilateral(channel, colorProfile.getContrastBilateral(channel));
+                gammaModel.setContrastUnilateral(channel, colorProfile.getContrastUnilateral(channel));
+                gammaModel.setGamma(channel, colorProfile.getGamma(channel));
+            }
+            gammaModel.setTemperature(colorProfile.getTemperature());
+            boolean[] invertedChannels = colorProfile.getInvertedChannels();
+            boolean[] invertedChannelsInModel = getInvertedChannels();
+            for (Gamma.Channel channel : Gamma.Channel.values()) {
+                if (invertedChannels[channel.getIndex()] != invertedChannelsInModel[channel.getIndex()]) {
+                    invertGammaRamp(channel);
+                }
+            }
+        }
     }
 
     @Override

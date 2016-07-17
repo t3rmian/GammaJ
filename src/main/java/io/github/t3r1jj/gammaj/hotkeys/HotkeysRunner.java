@@ -8,14 +8,18 @@ import java.util.function.Consumer;
 
 public class HotkeysRunner {
 
-    private final List<HotkeyPollerThread> registeredHotkeys = new ArrayList<>();
     private static final HotkeysRunner instance = new HotkeysRunner();
+    private final List<HotkeyPollerThread> registeredHotkeys = new ArrayList<>();
 
     private HotkeysRunner() {
     }
 
     public static HotkeysRunner getInstance() {
         return instance;
+    }
+
+    public HotkeyPollerThread getApplicationHotkey() {
+        return registeredHotkeys.get(0);
     }
 
     public void deregisterHotkey(HotkeyPollerThread hotkeyToDelete) {
@@ -28,6 +32,10 @@ public class HotkeysRunner {
                 return;
             }
         }
+    }
+
+    public boolean isRegisteredOnProfile(HotkeyPollerThread hotkey) {
+        return registeredHotkeys.indexOf(hotkey) > 0;
     }
 
     public boolean isRegistered(HotkeyPollerThread hotkey) {
@@ -53,7 +61,15 @@ public class HotkeysRunner {
         if (!isRegistered(hotkey)) {
             hotkey.start();
             registeredHotkeys.add(hotkey);
+            System.out.println("ADDED: " + hotkey.getDisplayText());
         }
+    }
+
+    public void reregisterApplicationHotkey(HotkeyPollerThread newHotkey) {
+        deregisterHotkey(registeredHotkeys.get(0));
+        newHotkey.start();
+        registeredHotkeys.add(0, newHotkey);
+        System.out.println("READDED: " + newHotkey);
     }
 
 }

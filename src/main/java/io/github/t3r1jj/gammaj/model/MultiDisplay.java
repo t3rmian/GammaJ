@@ -22,75 +22,103 @@ import java.util.List;
 
 public class MultiDisplay extends AbstractDisplay {
 
-    private final List<Display> screens = new ArrayList<>();
+    private final List<Display> displays = new ArrayList<>();
+    private final List<Display> detachedDisplays = new ArrayList<>();
 
     public MultiDisplay(HDC hdc) {
         super(hdc);
-        name = "Whole screen";
+        name = "Whole display";
     }
 
-    public void addScreen(Display screen) {
-        screens.add(screen);
+    public void addScreen(Display display) {
+        displays.add(display);
     }
 
     public List<Display> getDisplays() {
-        return screens;
+        return displays;
+    }
+
+    public void detachDisplays() {
+        detachedDisplays.addAll(displays);
+        displays.clear();
+    }
+
+    public void attachDisplays() {
+        displays.addAll(detachedDisplays);
+        detachedDisplays.clear();
     }
 
     @Override
     public void resetGammaRamp() {
         super.resetGammaRamp();
-        for (Display screen : screens) {
-            screen.resetGammaRamp();
+        for (Display display : displays) {
+            display.resetGammaRamp();
         }
     }
 
     @Override
     public void setContrastBilateral(Gamma.Channel channel, double contrast) {
         super.setContrastBilateral(channel, contrast);
-        for (Display screen : screens) {
-            screen.setContrastBilateral(channel, contrast);
+        for (Display display : displays) {
+            display.setContrastBilateral(channel, contrast);
         }
     }
 
     @Override
     public void setContrastUnilateral(Gamma.Channel channel, double contrastGain) {
         super.setContrastUnilateral(channel, contrastGain);
-        for (Display screen : screens) {
-            screen.setContrastUnilateral(channel, contrastGain);
+        for (Display display : displays) {
+            display.setContrastUnilateral(channel, contrastGain);
         }
     }
 
     @Override
     public void setBrightness(Gamma.Channel channel, double brightness) {
         super.setBrightness(channel, brightness);
-        for (Display screen : screens) {
-            screen.setBrightness(channel, brightness);
+        for (Display display : displays) {
+            display.setBrightness(channel, brightness);
         }
     }
 
     @Override
     public void setGamma(Gamma.Channel channel, double gamma) {
         super.setGamma(channel, gamma);
-        for (Display screen : screens) {
-            screen.setGamma(channel, gamma);
+        for (Display display : displays) {
+            display.setGamma(channel, gamma);
         }
     }
 
     @Override
     public void setTemperature(RgbTemperature temperature) {
         super.setTemperature(temperature);
-        for (Display screen : screens) {
-            screen.setTemperature(temperature);
+        for (Display display : displays) {
+            display.setTemperature(temperature);
         }
     }
 
     @Override
     public void setColorProfile(ColorProfile colorProfile) {
         super.setColorProfile(colorProfile);
-        for (Display screen : screens) {
-            screen.setColorProfile(colorProfile);
+        for (Display display : displays) {
+            display.setColorProfile(colorProfile.clone(colorProfile.getName()));
         }
+    }
+
+    @Override
+    public void loadModelFromProfile(boolean useRamp) {
+        super.loadModelFromProfile(useRamp);
+        for (Display display : displays) {
+            display.setColorProfile(colorProfile.clone(colorProfile.getName()));
+            display.loadModelFromProfile(useRamp);
+        }
+    }
+
+    @Override
+    public void reinitialize() {
+        for (Display display : displays) {
+            display.reinitialize();
+        }
+        super.reinitialize();
     }
 
 }
