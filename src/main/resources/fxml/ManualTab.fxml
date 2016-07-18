@@ -32,7 +32,7 @@
                 <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
             </padding>
         </StackPane>
-        <ComboBox fx:id="screenComboBox" layoutX="313.0" layoutY="14.0" prefWidth="150.0" />
+        <ComboBox fx:id="displaysComboBox" layoutX="313.0" layoutY="14.0" prefWidth="150.0" />
         <TitledPane animated="false" collapsible="false" layoutX="330.0" layoutY="158.0" prefHeight="136.0" text="Channels" AnchorPane.leftAnchor="285.0" AnchorPane.topAnchor="136.0">
             <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">

@@ -40,7 +40,7 @@ public class DisplayUtil {
         return monitorsCount;
     }
 
-    public SingleDisplay getMonitor(int id) {
+    public Display getMonitor(int id) {
         String lpszDriver = "\\\\.\\DISPLAY" + id;
         String lpszDevice = lpszDriver;
         HDC hdc = MyGDI32.INSTANCE.CreateDC(lpszDriver, lpszDriver, null, null);

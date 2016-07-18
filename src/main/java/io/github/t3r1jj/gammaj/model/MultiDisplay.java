@@ -27,7 +27,7 @@ public class MultiDisplay extends AbstractDisplay {
 
     public MultiDisplay(HDC hdc) {
         super(hdc);
-        name = "Whole display";
+        name = "Whole screen";
     }
 
     public void addScreen(Display display) {

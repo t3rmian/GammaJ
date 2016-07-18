@@ -18,6 +18,7 @@ package io.github.t3r1jj.gammaj.model;
 import io.github.t3r1jj.gammaj.model.temperature.RgbTemperature;
 import com.sun.jna.platform.win32.WinDef;
 import io.github.t3r1jj.gammaj.model.Gamma.Channel;
+import java.util.Objects;
 
 public abstract class AbstractDisplay implements Display {
 
@@ -132,6 +133,28 @@ public abstract class AbstractDisplay implements Display {
         }
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 73 * hash + Objects.hashCode(this.name);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final AbstractDisplay other = (AbstractDisplay) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        return true;
+    }
+    
     @Override
     public String toString() {
         return name;

@@ -42,16 +42,16 @@ limitations under the License.
             <content>
                 <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="501.0">
                     <children>
-                        <TabPane prefHeight="700.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" tabMinWidth="239.0">
+                        <TabPane fx:id="tabPane" prefHeight="700.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" tabMinWidth="239.0">
                             <tabs>
-                                <Tab closable="false" styleClass="tabLeft" text="Assisted color adjustment">
+                                <Tab fx:id="assistedTab" closable="false" styleClass="tabLeft" text="Assisted color adjustment">
                                     <content>
-                                        <fx:include fx:id="assistedTab" source="AssistedTab.fxml" />
+                                        <fx:include source="AssistedTab.fxml" />
                                     </content>
                                 </Tab>
-                                <Tab closable="false" text="Manual color adjustment">
+                                <Tab fx:id="manualTab" closable="false" text="Manual color adjustment">
                                     <content>
-                                        <fx:include fx:id="manualTab" source="ManualTab.fxml" />
+                                        <fx:include source="ManualTab.fxml" />
                                     </content>
                                 </Tab>
                             </tabs>

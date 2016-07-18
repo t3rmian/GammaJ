@@ -15,52 +15,39 @@
  */
 package io.github.t3r1jj.gammaj.controllers;
 
-import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
-import io.github.t3r1jj.gammaj.model.ColorProfile;
-import io.github.t3r1jj.gammaj.hotkeys.HotkeyInputEventHandler;
-import io.github.t3r1jj.gammaj.model.Gamma.Channel;
-import io.github.t3r1jj.gammaj.model.Display;
-import io.github.t3r1jj.gammaj.model.temperature.TemperatureSimpleFactory;
+import io.github.t3r1jj.gammaj.model.ViewModel;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 
 public class SceneController implements Initializable {
 
-    private Display currentDisplay;
-    private final Set<Channel> selectedChannels = EnumSet.allOf(Channel.class);
-    private final List<ColorProfile> loadedProfiles = new ArrayList<>();
-    private final HotkeysRunner hotkeysRunner;
-    private HotkeyInputEventHandler hotkeyInput;
-    private TemperatureSimpleFactory temperatureFactory = new TemperatureSimpleFactory("rgb");
-
+    ViewModel viewModel = ViewModel.getInstance();
     @FXML
-    private MenuBarController menuBarController;
+    private TabPane tabPane;
     @FXML
-    private AssistedTabController assistedTabController;
+    private Tab assistedTab;
     @FXML
-    private ManualTabController manualTabController;
-   
-
-    public SceneController(HotkeysRunner hotkeysRunner) {
-        this.hotkeysRunner = hotkeysRunner;
-    }
-
-    public static final Paint GAMMA_CANVAS_BACKGROUND_COLOR = Color.WHITE;
-    public static final Paint[] GAMMA_CANVAS_LINE_COLOR = new Paint[]{Color.RED, Color.GREEN, Color.BLUE};
+    private Tab manualTab;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 
+            @Override
+            public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab nowSelectedTab) {
+                if (nowSelectedTab.equals(assistedTab)) {
+                    viewModel.getAssistedAdjustmentProperty().set(true);
+                } else {
+                    viewModel.getAssistedAdjustmentProperty().set(false);
+                }
+            }
+        });
     }
-
 
 }

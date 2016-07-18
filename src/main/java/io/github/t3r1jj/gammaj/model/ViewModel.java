@@ -1,6 +1,22 @@
+/* 
+ * Copyright 2016 Damian Terlecki.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.t3r1jj.gammaj.model;
 
 import com.sun.javafx.collections.ObservableListWrapper;
+import io.github.t3r1jj.gammaj.Configuration;
 import io.github.t3r1jj.gammaj.GammaRampPainter;
 import io.github.t3r1jj.gammaj.controllers.SceneController;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyListener;
@@ -11,6 +27,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
@@ -25,8 +43,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Alert;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.stage.StageStyle;
 
 public class ViewModel {
 
@@ -42,16 +59,23 @@ public class ViewModel {
     private final BooleanProperty reset = new SimpleBooleanProperty(true);
     private final BooleanProperty isSrgb = new SimpleBooleanProperty(false);
     private final GammaRampPainter gammaRampPainter = new GammaRampPainter();
+    private final Configuration configuration = new Configuration();
 
     private ViewModel() {
+        configuration.load();
         selectedChannels.set(FXCollections.observableSet(Gamma.Channel.values()));
         loadFileProfiles();
         registerHotkeys();
 
         DisplayUtil screenUtil = new DisplayUtil();
         final MultiDisplay multiDisplay = screenUtil.getMultiDisplay();
-        displays.add(multiDisplay);
-        displays.addAll(multiDisplay.getDisplays());
+        List<Display> singleDisplays = multiDisplay.getDisplays();
+        if (singleDisplays.size() == 1) {
+            displays.addAll(singleDisplays);
+        } else {
+            displays.add(multiDisplay);
+            displays.addAll(singleDisplays);
+        }
         detachDisplay.addListener(new ChangeListener<Boolean>() {
 
             @Override
@@ -61,9 +85,28 @@ public class ViewModel {
                 } else {
                     multiDisplay.attachDisplays();
                 }
+                configuration.setIsDisplaysDetached(nowDetach);
+                configuration.save();
             }
         });
         currentDisplay.set(multiDisplay);
+        if (configuration.isDisplaysDetached()) {
+            detachDisplay.set(true);
+        }
+        if (configuration.getLoadCorrespongingProfiles()) {
+            for (HashMap.Entry<Display, String> displayProfileEntry : configuration.getCorrespondingProfiles(displays).entrySet()) {
+                String profileName = displayProfileEntry.getValue();
+                if ("".equals(profileName)) {
+                    continue;
+                }
+                Display display = displayProfileEntry.getKey();
+                for (ColorProfile profile : loadedProfiles) {
+                    if (profile.getName().equals(profileName)) {
+                        display.setColorProfile(profile.clone(profileName));
+                    }
+                }
+            }
+        }
     }
 
     public static ViewModel getInstance() {
@@ -95,7 +138,8 @@ public class ViewModel {
             errorBuilder.delete(errorBuilder.length() - 2, errorBuilder.length());
             errorBuilder.append(".");
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-            errorAlert.setTitle("Profile loading error");
+            errorAlert.initStyle(StageStyle.UTILITY);
+errorAlert.setTitle("Profile loading error");
             errorAlert.setHeaderText(null);
             errorAlert.setContentText("Could not load color profiles: " + errorBuilder.toString());
             errorAlert.showAndWait();
@@ -103,18 +147,17 @@ public class ViewModel {
     }
 
     private void registerHotkeys() {
-        registerReset();
+        registerResetHotkey();
         registerProfileHotkeys();
     }
 
-    private void registerReset() {
-        KeyEvent ctrlShiftR = new KeyEvent(instance, null, null, null, null, KeyCode.R, true, true, false, false);
-        HotkeyPollerThread resetHotkey = new HotkeyPollerThread(ctrlShiftR);
+    private void registerResetHotkey() {
+        HotkeyPollerThread resetHotkey = configuration.getHotkey();
         resetHotkey.setHotkeyListener(new HotkeyListener() {
 
             @Override
             public void hotkeyPressed() {
-                reset.set(reset.getValue());
+                reset.set(!reset.getValue());
             }
 
             @Override
@@ -147,10 +190,21 @@ public class ViewModel {
             errorBuilder.delete(errorBuilder.length() - 2, errorBuilder.length());
             errorBuilder.append(".");
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.initStyle(StageStyle.UTILITY);
             errorAlert.setTitle("Hotkey registration error");
             errorAlert.setHeaderText(null);
             errorAlert.setContentText("Could not register hotkey for profiles: " + errorBuilder.toString());
             errorAlert.showAndWait();
+        }
+    }
+
+    public void saveAndReset() {
+        configuration.setCorrespondingProfiles(displays);
+        configuration.save();
+        if (configuration.isColorResetOnExit()) {
+            for (Display display : displays) {
+                display.resetGammaRamp();
+            }
         }
     }
 
@@ -196,6 +250,10 @@ public class ViewModel {
 
     public GammaRampPainter getGammaRampPainter() {
         return gammaRampPainter;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
 }

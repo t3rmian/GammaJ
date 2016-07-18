@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright 2016 Damian Terlecki.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,7 @@
  */
 package io.github.t3r1jj.gammaj.controllers;
 
+import io.github.t3r1jj.gammaj.StringTemperatureConverter;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.model.ColorProfile;
 import io.github.t3r1jj.gammaj.model.Gamma;
@@ -24,15 +25,11 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
-import javafx.util.StringConverter;
 
 public class AssistedTabController extends AbstractTabController {
-    
-    @FXML
-    private Canvas canvas;
+
     @FXML
     private Slider gammaSlider;
     @FXML
@@ -53,13 +50,13 @@ public class AssistedTabController extends AbstractTabController {
     private Spinner contrastUnilateralSpinner;
     @FXML
     private Spinner temperatureSpinner;
-    
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         super.initialize(url, rb);
         temperatureFactory.setIsSrgb(viewModel.getIsSrgbProperty().get());
         viewModel.getIsSrgbProperty().addListener(new ChangeListener<Boolean>() {
-            
+
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean wasSrgb, Boolean isSrgb) {
                 if (!loadingProfile) {
@@ -72,9 +69,9 @@ public class AssistedTabController extends AbstractTabController {
                 }
             }
         });
-        
+
         gammaSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            
+
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 if (!loadingProfile) {
@@ -86,10 +83,10 @@ public class AssistedTabController extends AbstractTabController {
                     gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
                 }
             }
-            
+
         });
         brightnessSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            
+
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 if (!loadingProfile) {
@@ -101,10 +98,10 @@ public class AssistedTabController extends AbstractTabController {
                     gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
                 }
             }
-            
+
         });
         contrastBilateralSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            
+
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 if (!loadingProfile) {
@@ -116,10 +113,10 @@ public class AssistedTabController extends AbstractTabController {
                     gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
                 }
             }
-            
+
         });
         contrastUnilateralSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            
+
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 if (!loadingProfile) {
@@ -131,24 +128,13 @@ public class AssistedTabController extends AbstractTabController {
                     gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
                 }
             }
-            
+
         });
-        
-        temperatureSlider.setLabelFormatter(new StringConverter<Double>() {
-            
-            @Override
-            public String toString(Double object) {
-                return (int) (object / 1000) + "kK";
-            }
-            
-            @Override
-            public Double fromString(String string) {
-                return Double.valueOf(string.substring(0, string.length() - 2));
-            }
-        });
-        
+
+        temperatureSlider.setLabelFormatter(new StringTemperatureConverter());
+
         temperatureSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            
+
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 resetProfile();
@@ -158,25 +144,27 @@ public class AssistedTabController extends AbstractTabController {
                 }
                 gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
             }
-            
+
         });
-        
-        
+
         Bindings.bindBidirectional(gammaSlider.valueProperty(), gammaSpinner.getValueFactory().valueProperty());
         Bindings.bindBidirectional(contrastBilateralSlider.valueProperty(), contrastBilateralSpinner.getValueFactory().valueProperty());
         Bindings.bindBidirectional(contrastUnilateralSlider.valueProperty(), contrastUnilateralSpinner.getValueFactory().valueProperty());
         Bindings.bindBidirectional(brightnessSlider.valueProperty(), brightnessSpinner.getValueFactory().valueProperty());
         Bindings.bindBidirectional(temperatureSlider.valueProperty(), temperatureSpinner.getValueFactory().valueProperty());
 
-        gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
+        if (viewModel.getAssistedAdjustmentProperty().get()) {
+            viewModel.getCurrentProfileProperty().set(viewModel.getCurrentDisplayProperty().get().getColorProfile());
+        }
+//        gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
     }
-    
+
     @Override
     protected void loadLocalProfile() {
         loadingProfile = true;
         ColorProfile colorProfile = viewModel.getCurrentDisplayProperty().get().getColorProfile();
         Gamma.Channel selectedChannel = viewModel.getSelectedChannelsProperty().iterator().next();
-        System.out.println("Starting profile load: " + colorProfile + ", gamma: " + colorProfile.getGamma(selectedChannel));
+        System.out.println("Starting profile load: " + colorProfile + ", gamma: " + colorProfile.getGamma(Gamma.Channel.RED));
         gammaSpinner.getValueFactory().setValue(colorProfile.getGamma(selectedChannel));
         contrastBilateralSpinner.getValueFactory().setValue(colorProfile.getContrastBilateral(selectedChannel));
         contrastUnilateralSpinner.getValueFactory().setValue(colorProfile.getContrastUnilateral(selectedChannel));
@@ -190,7 +178,7 @@ public class AssistedTabController extends AbstractTabController {
         gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
         loadingProfile = false;
     }
-    
+
     @Override
     protected void resetColorAdjustment() {
         gammaSlider.setValue(Gamma.DEFAULT_GAMMA);
@@ -199,5 +187,12 @@ public class AssistedTabController extends AbstractTabController {
         contrastUnilateralSlider.setValue(Gamma.DEFAULT_CONTRAST_UNILATERAL);
         temperatureSlider.setValue(Gamma.DEFAULT_TEMPERATURE);
     }
-    
+
+    @Override
+    protected void initializeTabListeners() {
+        if (viewModel.getAssistedAdjustmentProperty().get()) {
+            addTabListeners();
+        }
+    }
+
 }

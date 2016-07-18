@@ -1,3 +1,18 @@
+/* 
+ * Copyright 2016 Damian Terlecki.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.t3r1jj.gammaj.controllers;
 
 import io.github.t3r1jj.gammaj.GammaRampPainter;
@@ -34,13 +49,16 @@ public abstract class AbstractTabController implements Initializable {
     protected final TemperatureSimpleFactory temperatureFactory = new TemperatureSimpleFactory();
     protected GammaRampPainter gammaRampPainter;
     protected boolean loadingProfile;
+    protected ChangeListener<Boolean> resetListener;
 
     @FXML
     protected Canvas canvas;
     @FXML
-    protected ComboBox<Display> screenComboBox;
+    protected ComboBox<Display> displaysComboBox;
+    protected ChangeListener<Display> displayChangeListener;
     @FXML
     protected ComboBox<ColorProfile> profilesComboBox;
+    protected ChangeListener<ColorProfile> profileChangeListener;
     @FXML
     protected TextField hotkeyTextField;
 
@@ -52,7 +70,10 @@ public abstract class AbstractTabController implements Initializable {
 
         profilesComboBox.itemsProperty().set(viewModel.getLoadedProfilesProperty());
         profilesComboBox.valueProperty().bindBidirectional(viewModel.getCurrentProfileProperty());
-        profilesComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ColorProfile>() {
+
+        displaysComboBox.itemsProperty().set(viewModel.getDisplaysProperty());
+        displaysComboBox.valueProperty().bindBidirectional(viewModel.getCurrentDisplayProperty());
+        profileChangeListener = new ChangeListener<ColorProfile>() {
 
             @Override
             public void changed(ObservableValue<? extends ColorProfile> observable, ColorProfile oldValue, ColorProfile selectedColorProfile) {
@@ -71,26 +92,49 @@ public abstract class AbstractTabController implements Initializable {
                 System.out.println("Loading profile: " + selectedColorProfile);
                 loadLocalProfile();
             }
-        });
+        };
 
-        screenComboBox.itemsProperty().set(viewModel.getDisplaysProperty());
-        screenComboBox.valueProperty().bindBidirectional(viewModel.getCurrentDisplayProperty());
-        screenComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Display>() {
+        displayChangeListener = new ChangeListener<Display>() {
             @Override
             public void changed(ObservableValue<? extends Display> observable, Display oldValue, Display selectedDisplay) {
                 profilesComboBox.getSelectionModel().select(selectedDisplay.getColorProfile());
             }
 
-        });
-
-        viewModel.getResetProperty().addListener(new ChangeListener<Boolean>() {
+        };
+        resetListener = new ChangeListener<Boolean>() {
 
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 handleResetButtonAction(null);
             }
+        };
+
+        initializeTabListeners();
+        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean isNowAssisted) {
+                System.out.println("INVOKED TAB CHANGE");
+                if (isNowAssisted) {
+                    addTabListeners();
+                } else {
+                    removeListeners();
+                }
+            }
         });
 
+    }
+
+    protected void addTabListeners() {
+        profilesComboBox.getSelectionModel().selectedItemProperty().addListener(profileChangeListener);
+        displaysComboBox.getSelectionModel().selectedItemProperty().addListener(displayChangeListener);
+        viewModel.getResetProperty().addListener(resetListener);
+    }
+
+    protected void removeListeners() {
+        profilesComboBox.getSelectionModel().selectedItemProperty().removeListener(profileChangeListener);
+        displaysComboBox.getSelectionModel().selectedItemProperty().removeListener(displayChangeListener);
+        viewModel.getResetProperty().removeListener(resetListener);
     }
 
     @FXML
@@ -105,7 +149,8 @@ public abstract class AbstractTabController implements Initializable {
     @FXML
     protected void handleSaveProfileAsButtonAction(ActionEvent event) throws IOException, InterruptedException {
         TextInputDialog nameInputDialog = new TextInputDialog();
-        nameInputDialog.setTitle("Save as");
+                                           nameInputDialog.initOwner(canvas.getScene().getWindow());
+ nameInputDialog.setTitle("Save as");
         nameInputDialog.setHeaderText("Color profile");
         nameInputDialog.setContentText("File name");
         Optional<String> nameWrapper = nameInputDialog.showAndWait();
@@ -142,6 +187,7 @@ public abstract class AbstractTabController implements Initializable {
                 viewModel.getHotkeysRunner().registerHotkey(hotkey);
             } else {
                 Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                errorAlert.initOwner(canvas.getScene().getWindow());
                 errorAlert.setTitle("Hotkey not registered");
                 errorAlert.setHeaderText(null);
                 errorAlert.setContentText("Hotkey \"" + hotkey.getDisplayText()
@@ -192,6 +238,7 @@ public abstract class AbstractTabController implements Initializable {
 
     protected boolean userWantsProfileOverwrite() throws IOException {
         Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationAlert.initOwner(canvas.getScene().getWindow());
         confirmationAlert.setTitle("Color profile already exists");
         confirmationAlert.setHeaderText(null);
         confirmationAlert.setContentText("Color profile with that name already exists. Do you want to overwrite it?");
@@ -210,7 +257,8 @@ public abstract class AbstractTabController implements Initializable {
     @FXML
     protected void handleDeleteProfileButtonAction(ActionEvent event) {
         ChoiceDialog choiceDialog = new ChoiceDialog(profilesComboBox.getSelectionModel().getSelectedItem(), viewModel.getLoadedProfilesProperty());
-        choiceDialog.setTitle("Delete color profile");
+                                            choiceDialog.initOwner(canvas.getScene().getWindow());
+choiceDialog.setTitle("Delete color profile");
         choiceDialog.setHeaderText(null);
         choiceDialog.setContentText("Select color profile to delete");
         Optional<ColorProfile> selectedProfile = choiceDialog.showAndWait();
@@ -245,5 +293,7 @@ public abstract class AbstractTabController implements Initializable {
     protected abstract void loadLocalProfile();
 
     protected abstract void resetColorAdjustment();
+
+    protected abstract void initializeTabListeners();
 
 }

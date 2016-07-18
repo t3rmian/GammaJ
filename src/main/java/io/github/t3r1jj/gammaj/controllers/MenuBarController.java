@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright 2016 Damian Terlecki.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  */
 package io.github.t3r1jj.gammaj.controllers;
 
-import io.github.t3r1jj.gammaj.TrayManager;
+import io.github.t3r1jj.gammaj.tray.TrayManager;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyInputEventHandler;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
@@ -45,7 +45,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -61,10 +61,9 @@ public class MenuBarController implements Initializable {
     private HotkeyInputEventHandler hotkeyInput;
 
     @FXML
-    private CheckMenuItem srgbCheckMenuItem;
-
+    private MenuBar menuBar;
     @FXML
-    private MenuItem resetMenuItem;
+    private CheckMenuItem srgbCheckMenuItem;
 
     public MenuBarController(HostServices hostServices, TrayManager trayManager, HotkeysRunner hotkeysRunner) {
         this.hostServices = hostServices;
@@ -72,6 +71,26 @@ public class MenuBarController implements Initializable {
         this.hotkeysRunner = hotkeysRunner;
     }
 
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        srgbCheckMenuItem.selectedProperty().bindBidirectional(viewModel.getIsSrgbProperty());
+        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean isNowAssisted) {
+                srgbCheckMenuItem.setDisable(!isNowAssisted);
+            }
+        });
+        if (viewModel.getConfiguration().isTrayEnabled()) {
+            try {
+                trayManager.enableTray(true);
+            } catch (IOException | AWTException ex) {
+                Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    @FXML
     public void handleResetAction(ActionEvent event) {
         viewModel.getResetProperty().setValue(!viewModel.getResetProperty().get());
     }
@@ -79,6 +98,7 @@ public class MenuBarController implements Initializable {
     @FXML
     private void handleSettingsAction(ActionEvent event) {
         Alert settingsAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        settingsAlert.initOwner(menuBar.getScene().getWindow());
         settingsAlert.setTitle("Settings");
         settingsAlert.setHeaderText(null);
         final TextField hotkeyTextField = new TextField();
@@ -101,7 +121,12 @@ public class MenuBarController implements Initializable {
         hotkeyTextField.setOnKeyPressed(hotkeyInput);
         Label hotkeyLabel = new Label("Reset global hotkey:  ");
         CheckBox detachDisplaysCheckBox = new CheckBox("Displays detached from whole screen");
+
         detachDisplaysCheckBox.setSelected(viewModel.getDetachDisplay().get());
+        CheckBox resetOnExitCheckbox = new CheckBox("Reset color on exit");
+        resetOnExitCheckbox.setSelected(viewModel.getConfiguration().isColorResetOnExit());
+        CheckBox loadOnStartCheckbox = new CheckBox("Load selected profiles on start");
+        loadOnStartCheckbox.setSelected(viewModel.getConfiguration().getLoadCorrespongingProfiles());
         viewModel.getDetachDisplay().bind(detachDisplaysCheckBox.selectedProperty());
         GridPane outPane = new GridPane();
         outPane.setMaxWidth(Double.MAX_VALUE);
@@ -114,10 +139,17 @@ public class MenuBarController implements Initializable {
         outPane.add(contentPane, 0, 0);
         outPane.add(new Label(), 0, 1);
         outPane.add(detachDisplaysCheckBox, 0, 2);
+        outPane.add(new Label(), 0, 3);
+        outPane.add(resetOnExitCheckbox, 0, 4);
+        outPane.add(new Label(), 0, 5);
+        outPane.add(loadOnStartCheckbox, 0, 6);
         settingsAlert.getDialogPane().contentProperty().set(outPane);
         Optional<ButtonType> result = settingsAlert.showAndWait();
         if (result.get().equals(ButtonType.OK)) {
+            viewModel.getConfiguration().setIsColorResetOnExit(resetOnExitCheckbox.isSelected());
+            viewModel.getConfiguration().setLoadCorrespondingProfiles(loadOnStartCheckbox.isSelected());
             handleHotkeyChange(event, resetHotkey);
+            viewModel.getConfiguration().save();
         }
         hotkeyInput = null;
     }
@@ -126,6 +158,7 @@ public class MenuBarController implements Initializable {
         HotkeyPollerThread newHotkey = hotkeyInput.getHotkey();
         if (newHotkey == null) {
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.initOwner(menuBar.getScene().getWindow());
             errorAlert.setTitle("Hotkey not changed");
             errorAlert.setHeaderText(null);
             errorAlert.setContentText("Hotkey must not be empty in case of setting or loading entirely black/white profile you would not be able to reset it without system restart.");
@@ -133,6 +166,7 @@ public class MenuBarController implements Initializable {
             handleSettingsAction(event);
         } else if (viewModel.getHotkeysRunner().isRegisteredOnProfile(newHotkey)) {
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.initOwner(menuBar.getScene().getWindow());
             errorAlert.setTitle("Hotkey not changed");
             errorAlert.setHeaderText(null);
             errorAlert.setContentText("Hotkey \"" + newHotkey.getDisplayText()
@@ -143,11 +177,13 @@ public class MenuBarController implements Initializable {
         } else if (!resetHotkey.equals(newHotkey)) {
             newHotkey.setHotkeyListener(resetHotkey.getHotkeyListener());
             viewModel.getHotkeysRunner().reregisterApplicationHotkey(newHotkey);
+            viewModel.getConfiguration().setHotkey(newHotkey);
         }
     }
 
     @FXML
     private void handleExitAction(ActionEvent event) {
+        viewModel.saveAndReset();
         Platform.exit();
         System.exit(0);
     }
@@ -158,6 +194,8 @@ public class MenuBarController implements Initializable {
         boolean trayEnabled = trayCheckBox.isSelected();
         try {
             trayManager.enableTray(trayEnabled);
+            viewModel.getConfiguration().setIsTrayEnabled(trayEnabled);
+            viewModel.getConfiguration().save();
         } catch (IOException | AWTException ex) {
             Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -167,6 +205,7 @@ public class MenuBarController implements Initializable {
     private void handleAboutAction(ActionEvent event) {
         ProjectInfo projectInfo = new ProjectInfo();
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.initOwner(menuBar.getScene().getWindow());
         alert.setTitle("About");
         alert.setHeaderText(projectInfo.getAboutHeader());
         alert.setContentText(projectInfo.getAboutContent());
@@ -177,6 +216,7 @@ public class MenuBarController implements Initializable {
     private void handleLicenseAction(ActionEvent event) {
         ProjectInfo projectInfo = new ProjectInfo();
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.initOwner(menuBar.getScene().getWindow());
         List<Library> libraries = projectInfo.getLibrariesUsed();
         StringBuilder stringBuilder = new StringBuilder();
         List<ButtonType> buttons = new ArrayList<>();
@@ -204,6 +244,7 @@ public class MenuBarController implements Initializable {
 
     private void showLibraryLicense(Library pressedLibrary) {
         Alert licenseAlert = new Alert(Alert.AlertType.INFORMATION);
+        licenseAlert.initOwner(menuBar.getScene().getWindow());
         licenseAlert.setTitle(pressedLibrary.nameLong);
         licenseAlert.setHeaderText(null);
         licenseAlert.setContentText(pressedLibrary.licenseLong);
@@ -215,18 +256,6 @@ public class MenuBarController implements Initializable {
         } else {
             handleLicenseAction(null);
         }
-    }
-
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        srgbCheckMenuItem.selectedProperty().bindBidirectional(viewModel.getIsSrgbProperty());
-        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean isNowAssisted) {
-                srgbCheckMenuItem.setDisable(!isNowAssisted);
-            }
-        });
     }
 
 }

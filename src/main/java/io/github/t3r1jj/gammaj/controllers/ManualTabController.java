@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright 2016 Damian Terlecki.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@ public class ManualTabController extends AbstractTabController {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+
         super.initialize(url, rb);
         gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
     }
@@ -34,6 +35,13 @@ public class ManualTabController extends AbstractTabController {
     @Override
     protected void resetColorAdjustment() {
 //        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected void initializeTabListeners() {
+        if (!viewModel.getAssistedAdjustmentProperty().get()) {
+            addTabListeners();
+        }
     }
 
 }

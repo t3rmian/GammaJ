@@ -17,6 +17,8 @@ package io.github.t3r1jj.gammaj.jna;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GammaRegistry {
 
@@ -35,9 +37,18 @@ public class GammaRegistry {
     private void setGammaExtensionValue(int value) {
         Advapi32Util.registrySetIntValue(GAMMA_HKEY, GDI_ICM_GAMMA_RANGE, GAMMA_KEY_NAME, value);
     }
-    
+
     public int getGammaExtensionValue() {
         return Advapi32Util.registryGetIntValue(GAMMA_HKEY, GDI_ICM_GAMMA_RANGE, GAMMA_KEY_NAME);
+    }
+
+    public boolean isGammaExtensionInstalled() {
+        try {
+            return getGammaExtensionValue() == GAMMA_EXTENSION_VALUE;
+        } catch (Exception ex) {
+            Logger.getLogger(GammaRegistry.class.getName()).log(Level.FINE, null, ex);
+            return false;
+        }
     }
 
 }

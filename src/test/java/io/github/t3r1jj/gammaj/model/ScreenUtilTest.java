@@ -15,8 +15,6 @@
  */
 package io.github.t3r1jj.gammaj.model;
 
-import io.github.t3r1jj.gammaj.model.DisplayUtil;
-import io.github.t3r1jj.gammaj.model.SingleDisplay;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -45,8 +43,8 @@ public class ScreenUtilTest {
         System.out.println("getMonitor");
         int id = 0;
         DisplayUtil instance = new DisplayUtil();
-        SingleDisplay expResult = null;
-        SingleDisplay result = instance.getMonitor(id);
+        Display result = instance.getMonitor(id);
+        assertNotNull(result);
     }
 
 }

@@ -15,26 +15,35 @@
  */
 package io.github.t3r1jj.gammaj;
 
+import io.github.t3r1jj.gammaj.tray.TrayManager;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.controllers.ApplicationControllerFactory;
 import io.github.t3r1jj.gammaj.jna.GammaRegistry;
+import io.github.t3r1jj.gammaj.model.ViewModel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class GammaJ extends Application {
 
+    private static final String appIconPath = "images/tray_icon.png";
+    private final ViewModel viewModel = ViewModel.getInstance();
     private TrayManager trayManager;
 
     @Override
     public void start(Stage stage) throws Exception {
-        GammaRegistry gammaRegistry = new GammaRegistry();
-        gammaRegistry.installGammaExtension();
-
-        trayManager = new TrayManager(stage);
+        stage.getIcons().add(new Image(this.getClass().getClassLoader().getResourceAsStream(appIconPath)));
+        trayManager = new TrayManager(stage, appIconPath, viewModel);
         FXMLLoader fXMLLoader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
         fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayManager, HotkeysRunner.getInstance()));
         Parent root = fXMLLoader.load();
@@ -47,6 +56,36 @@ public class GammaJ extends Application {
         stage.show();
         stage.setMaxWidth(stage.getWidth());
         stage.setMaxHeight(stage.getHeight());
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+            @Override
+            public void handle(WindowEvent event) {
+                viewModel.saveAndReset();
+                Platform.exit();
+                System.exit(0);
+            }
+        });
+
+        GammaRegistry gammaRegistry = new GammaRegistry();
+        if (!gammaRegistry.isGammaExtensionInstalled()) {
+            try {
+                gammaRegistry.installGammaExtension();
+                Alert infoAlert = new Alert(Alert.AlertType.INFORMATION);
+                infoAlert.initOwner(stage);
+                infoAlert.setTitle("Extended gamma installed");
+                infoAlert.setHeaderText("System needs reboot");
+                infoAlert.setContentText("Extended gamma has been installed and system reboot is needed. Entirely custom color adjustment will be then enabled.");
+                infoAlert.showAndWait();
+            } catch (Exception ex) {
+                Logger.getLogger(GammaRegistry.class.getName()).log(Level.SEVERE, null, ex);
+                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                errorAlert.initOwner(stage);
+                errorAlert.setTitle("Extended gamma not installed");
+                errorAlert.setHeaderText("Cannot access registry");
+                errorAlert.setContentText("Extended gamma has not been installed. This application needs to add registry entry. Only then entirely custom color adjustment will be enabled.");
+                errorAlert.showAndWait();
+            }
+        }
     }
 
     /**

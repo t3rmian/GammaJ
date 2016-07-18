@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.t3r1jj.gammaj;
+package io.github.t3r1jj.gammaj.tray;
 
+import io.github.t3r1jj.gammaj.GammaJ;
+import io.github.t3r1jj.gammaj.model.ViewModel;
 import java.awt.AWTError;
 import java.awt.AWTException;
 import java.awt.EventQueue;
@@ -22,8 +24,6 @@ import java.awt.Image;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,15 +37,18 @@ import javax.imageio.ImageIO;
 
 public class TrayManager {
 
-    private static final String iconImagePath = "images/tray_icon.png";
     private final Stage stage;
+    private final String trayIconPath;
+    private final ViewModel viewModel;
     private boolean trayEnabled = false;
     private TrayIcon trayIcon;
     private SystemTray systemTray;
     private ChangeListener changeListener;
 
-    public TrayManager(Stage stage) {
+    public TrayManager(Stage stage, String trayIconPath, ViewModel viewModel) {
         this.stage = stage;
+        this.trayIconPath = trayIconPath;
+        this.viewModel = viewModel;
         setExitAction();
     }
 
@@ -62,7 +65,7 @@ public class TrayManager {
             }
         });
     }
-    
+
     private void setupTray() {
         try {
             Toolkit.getDefaultToolkit();
@@ -79,29 +82,18 @@ public class TrayManager {
 
     private void setupTrayIcon() throws IOException, AWTException {
         if (trayEnabled) {
-            Image imageIcon = ImageIO.read(this.getClass().getClassLoader().getResourceAsStream(iconImagePath));
             systemTray = SystemTray.getSystemTray();
-            trayIcon = new TrayIcon(imageIcon);
-            trayIcon.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Platform.runLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            showStage();
-                        }
-                    });
-                }
-            });
+            Image trayImageIcon = ImageIO.read(this.getClass().getClassLoader().getResourceAsStream(trayIconPath));
+            trayIcon = new TrayIcon(trayImageIcon);
+            trayIcon.addActionListener(new DeiconifyActionListener(this));
+            trayIcon.setPopupMenu(new TrayPopupMenu(this, viewModel));
             systemTray.add(trayIcon);
         } else if (trayIcon != null) {
             systemTray.remove(trayIcon);
         }
     }
 
-    private void showStage() {
+    void showStage() {
         stage.show();
         stage.toFront();
     }
@@ -129,14 +121,19 @@ public class TrayManager {
 
             @Override
             public void handle(WindowEvent event) {
-                Platform.exit();
-                if (trayIcon != null) {
-                    systemTray.remove(trayIcon);
-                }
-                System.exit(0);
+                exit();
             }
         });
         Platform.setImplicitExit(false);
+    }
+
+    void exit() {
+        viewModel.saveAndReset();
+        Platform.exit();
+        if (trayIcon != null) {
+            systemTray.remove(trayIcon);
+        }
+        System.exit(0);
     }
 
 }

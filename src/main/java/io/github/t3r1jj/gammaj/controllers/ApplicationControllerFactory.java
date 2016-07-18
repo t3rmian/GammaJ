@@ -16,7 +16,7 @@
 package io.github.t3r1jj.gammaj.controllers;
 
 import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
-import io.github.t3r1jj.gammaj.TrayManager;
+import io.github.t3r1jj.gammaj.tray.TrayManager;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import javafx.application.HostServices;
