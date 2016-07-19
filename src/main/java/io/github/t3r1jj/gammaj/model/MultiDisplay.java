@@ -121,4 +121,21 @@ public class MultiDisplay extends AbstractDisplay {
         super.reinitialize();
     }
 
+    @Override
+    public void setGammaRampValue(Gamma.Channel channel, int x, int value) {
+        super.setGammaRampValue(channel, x, value);
+        for (Display display : displays) {
+            display.setGammaRampValue(channel, x, value);
+        }
+    }
+    
+    
+    @Override
+    public void setDeviceGammaRamp() {
+        for (Display display : displays) {
+            display.setDeviceGammaRamp();
+        }
+        super.setDeviceGammaRamp();
+    }
+
 }

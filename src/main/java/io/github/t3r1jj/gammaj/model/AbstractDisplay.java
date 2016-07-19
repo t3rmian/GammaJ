@@ -134,6 +134,16 @@ public abstract class AbstractDisplay implements Display {
     }
 
     @Override
+    public void setGammaRampValue(Channel channel, int x, int value) {
+        gammaModel.setGammaRampValue(channel, x, value);
+    }
+
+    @Override
+    public void setDeviceGammaRamp() {
+        gammaModel.setDeviceGammaRamp();
+    }
+
+    @Override
     public int hashCode() {
         int hash = 3;
         hash = 73 * hash + Objects.hashCode(this.name);

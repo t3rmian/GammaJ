@@ -107,9 +107,22 @@ public interface Display {
     boolean[] getInvertedChannels();
 
     /**
-     * 
+     *
      * @param useRamp loads only gamma ramp values
      */
     void loadModelFromProfile(boolean useRamp);
 
+    /**
+     *
+     * @param channel
+     * @param x from the range of 0...256
+     * @param value from the range of 0...65535
+     */
+    public void setGammaRampValue(Gamma.Channel channel, int x, int value);
+    
+    /**
+     * Sets device gamma ramp according to model data
+     */
+    public void setDeviceGammaRamp();
+    
 }

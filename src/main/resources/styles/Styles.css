@@ -5,3 +5,37 @@
 .tab-pane *.tab-header-area {
     -fx-padding: 0 0 0 0;
 }
+
+.table-column {
+    -fx-alignment: CENTER;
+}
+
+.my-header-column .column-header-background {
+    -fx-background-color: -fx-inner-border, -fx-body-color;
+    -fx-background-insets: 0, 1;
+}
+
+.my-header-column.table-cell{
+    -fx-light-text-color:  black ;
+    -fx-mid-text-color:   black ;
+    -fx-dark-text-color:  black ;
+    -fx-background-color: -fx-box-border, -fx-inner-border, -fx-body-color;
+    -fx-background-insets: 0, 0 1 1 0, 1 2 2 1;
+    -fx-font-weight: bold;
+    -fx-size: 2em;
+    -fx-text-fill: -fx-selection-bar-text;
+    -fx-padding: 0.166667em;
+}
+
+.table-row-cell:empty {
+    visibility: hidden;
+}
+
+.table-row-cell:empty .table-cell {
+    -fx-border-width: 0px;
+}
+
+.table-view .scroll-bar:vertical {
+    -fx-opacity: 0;
+    -fx-padding:-7;
+}

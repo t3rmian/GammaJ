@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
@@ -65,7 +66,7 @@ public class AssistedTabController extends AbstractTabController {
                     temperatureFactory.setIsSrgb(isSrgb);
                     viewModel.getCurrentDisplayProperty().get().setTemperature(temperatureFactory.createTemperature(temperatureSlider.valueProperty().getValue()));
                     viewModel.getCurrentDisplayProperty().get().reinitialize();
-                    gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
+                    drawGammaRamp();
                 }
             }
         });
@@ -80,7 +81,7 @@ public class AssistedTabController extends AbstractTabController {
                         viewModel.getCurrentDisplayProperty().get().setGamma(channel, newValue.doubleValue());
                     }
                     viewModel.getCurrentDisplayProperty().get().reinitialize();
-                    gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
+                    drawGammaRamp();
                 }
             }
 
@@ -95,7 +96,7 @@ public class AssistedTabController extends AbstractTabController {
                         viewModel.getCurrentDisplayProperty().get().setBrightness(channel, newValue.doubleValue());
                     }
                     viewModel.getCurrentDisplayProperty().get().reinitialize();
-                    gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
+                    drawGammaRamp();
                 }
             }
 
@@ -110,7 +111,7 @@ public class AssistedTabController extends AbstractTabController {
                         viewModel.getCurrentDisplayProperty().get().setContrastBilateral(channel, newValue.doubleValue());
                     }
                     viewModel.getCurrentDisplayProperty().get().reinitialize();
-                    gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
+                    drawGammaRamp();
                 }
             }
 
@@ -125,7 +126,7 @@ public class AssistedTabController extends AbstractTabController {
                         viewModel.getCurrentDisplayProperty().get().setContrastUnilateral(channel, newValue.doubleValue());
                     }
                     viewModel.getCurrentDisplayProperty().get().reinitialize();
-                    gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
+                    drawGammaRamp();
                 }
             }
 
@@ -142,7 +143,7 @@ public class AssistedTabController extends AbstractTabController {
                     viewModel.getCurrentDisplayProperty().get().setTemperature(temperatureFactory.createTemperature(newValue.doubleValue()));
                     viewModel.getCurrentDisplayProperty().get().reinitialize();
                 }
-                gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
+                    drawGammaRamp();
             }
 
         });
@@ -175,7 +176,7 @@ public class AssistedTabController extends AbstractTabController {
         hotkeyInput.setHotkey(hotkey);
         viewModel.getCurrentDisplayProperty().get().loadModelFromProfile(false);
         viewModel.getCurrentDisplayProperty().get().reinitialize();
-        gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
+                    drawGammaRamp();
         loadingProfile = false;
     }
 
@@ -192,6 +193,18 @@ public class AssistedTabController extends AbstractTabController {
     protected void initializeTabListeners() {
         if (viewModel.getAssistedAdjustmentProperty().get()) {
             addTabListeners();
+        }
+    }
+
+    @Override
+    protected void handleInvertButtonAction(ActionEvent event) {
+        if (!loadingProfile) {
+            resetProfile();
+            for (Gamma.Channel channel : viewModel.getSelectedChannelsProperty()) {
+                viewModel.getCurrentDisplayProperty().get().invertGammaRamp(channel);
+            }
+            viewModel.getCurrentDisplayProperty().get().reinitialize();
+            drawGammaRamp();
         }
     }
 

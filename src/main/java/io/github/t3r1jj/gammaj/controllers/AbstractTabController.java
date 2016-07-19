@@ -15,7 +15,6 @@
  */
 package io.github.t3r1jj.gammaj.controllers;
 
-import io.github.t3r1jj.gammaj.GammaRampPainter;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyInputEventHandler;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.hotkeys.ProfileHotkeyListener;
@@ -35,19 +34,24 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 
 public abstract class AbstractTabController implements Initializable {
+
+    public static final Paint GAMMA_CANVAS_BACKGROUND_COLOR = Color.WHITE;
+    public static final Paint[] GAMMA_CANVAS_LINE_COLOR = new Paint[]{Color.RED, Color.GREEN, Color.BLUE};
 
     ViewModel viewModel = ViewModel.getInstance();
     protected HotkeyInputEventHandler hotkeyInput;
     protected final TemperatureSimpleFactory temperatureFactory = new TemperatureSimpleFactory();
-    protected GammaRampPainter gammaRampPainter;
     protected boolean loadingProfile;
     protected ChangeListener<Boolean> resetListener;
 
@@ -64,7 +68,6 @@ public abstract class AbstractTabController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        gammaRampPainter = viewModel.getGammaRampPainter();
         hotkeyInput = new HotkeyInputEventHandler(hotkeyTextField);
         hotkeyTextField.setOnKeyPressed(hotkeyInput);
 
@@ -143,14 +146,14 @@ public abstract class AbstractTabController implements Initializable {
         resetProfile();
         resetColorAdjustment();
         viewModel.getCurrentDisplayProperty().get().resetGammaRamp();
-        gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
+        drawGammaRamp();
     }
 
     @FXML
     protected void handleSaveProfileAsButtonAction(ActionEvent event) throws IOException, InterruptedException {
         TextInputDialog nameInputDialog = new TextInputDialog();
-                                           nameInputDialog.initOwner(canvas.getScene().getWindow());
- nameInputDialog.setTitle("Save as");
+        nameInputDialog.initOwner(canvas.getScene().getWindow());
+        nameInputDialog.setTitle("Save as");
         nameInputDialog.setHeaderText("Color profile");
         nameInputDialog.setContentText("File name");
         Optional<String> nameWrapper = nameInputDialog.showAndWait();
@@ -257,8 +260,8 @@ public abstract class AbstractTabController implements Initializable {
     @FXML
     protected void handleDeleteProfileButtonAction(ActionEvent event) {
         ChoiceDialog choiceDialog = new ChoiceDialog(profilesComboBox.getSelectionModel().getSelectedItem(), viewModel.getLoadedProfilesProperty());
-                                            choiceDialog.initOwner(canvas.getScene().getWindow());
-choiceDialog.setTitle("Delete color profile");
+        choiceDialog.initOwner(canvas.getScene().getWindow());
+        choiceDialog.setTitle("Delete color profile");
         choiceDialog.setHeaderText(null);
         choiceDialog.setContentText("Select color profile to delete");
         Optional<ColorProfile> selectedProfile = choiceDialog.showAndWait();
@@ -279,14 +282,21 @@ choiceDialog.setTitle("Delete color profile");
     }
 
     @FXML
-    protected void handleInvertButtonAction(ActionEvent event) {
-        if (!loadingProfile) {
-            resetProfile();
-            for (Gamma.Channel channel : viewModel.getSelectedChannelsProperty()) {
-                viewModel.getCurrentDisplayProperty().get().invertGammaRamp(channel);
+    protected abstract void handleInvertButtonAction(ActionEvent event);
+
+    protected void drawGammaRamp() {
+        GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
+        graphicsContext.setFill(GAMMA_CANVAS_BACKGROUND_COLOR);
+        graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+        graphicsContext.setLineWidth(1);
+        double[][] gammaRamp = viewModel.getCurrentDisplayProperty().get().getNormalizedGammaRamp();
+        for (int i = 0; i < gammaRamp.length; i++) {
+            graphicsContext.setStroke(GAMMA_CANVAS_LINE_COLOR[i]);
+            graphicsContext.strokeLine(0, (1 - gammaRamp[i][0]) * canvas.getWidth(), 0, (1 - gammaRamp[i][0]) * canvas.getWidth());
+            for (int x = 1; x < canvas.getWidth(); x++) {
+                graphicsContext.strokeLine(x - 1, (1 - gammaRamp[i][x - 1]) * canvas.getWidth(), x, (1 - gammaRamp[i][x]) * canvas.getWidth());
             }
-            viewModel.getCurrentDisplayProperty().get().reinitialize();
-            gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
         }
     }
 
