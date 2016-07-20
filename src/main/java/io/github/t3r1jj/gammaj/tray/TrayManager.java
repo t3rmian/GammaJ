@@ -16,7 +16,7 @@
 package io.github.t3r1jj.gammaj.tray;
 
 import io.github.t3r1jj.gammaj.GammaJ;
-import io.github.t3r1jj.gammaj.model.ViewModel;
+import io.github.t3r1jj.gammaj.ViewModel;
 import java.awt.AWTError;
 import java.awt.AWTException;
 import java.awt.EventQueue;

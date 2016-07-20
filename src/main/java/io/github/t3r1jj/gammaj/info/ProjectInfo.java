@@ -22,9 +22,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ProjectInfo {
-    
+
     Properties properties = new Properties();
-    
+
     public ProjectInfo() {
         try {
             properties.load(this.getClass().getClassLoader().getResourceAsStream("project.properties"));
@@ -32,35 +32,55 @@ public class ProjectInfo {
             Logger.getLogger(ProjectInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public String getVersion() {
         return properties.getProperty("version");
     }
-    
+
+    public boolean isNewerVersion(String subjectedVersionPom) {
+        if (getVersion().contains("SNAPSHOT")) {
+            return false;
+        }
+        String[] subjectedVersioning = subjectedVersionPom.split(".");
+        String[] projectVersioning = getVersion().split(".");
+        try {
+            for (int i = 0; i < subjectedVersioning.length; i++) {
+                int subjectedVersion = Integer.parseInt(subjectedVersioning[i]);
+                int projectVersion = Integer.parseInt(projectVersioning[i]);
+                if (subjectedVersion > projectVersion) {
+                    return true;
+                }
+            }
+        } catch (Exception exception) {
+            return false;
+        }
+        return false;
+    }
+
     public String getProjectName() {
         return properties.getProperty("name");
     }
-    
+
     public String getProjectUrl() {
         return properties.getProperty("projectUrl");
     }
-    
+
     public String getDeveloperName() {
         return properties.getProperty("developerName");
     }
-    
+
     public String getDeveloperEmail() {
         return properties.getProperty("developerEmail");
     }
-    
+
     public String getDeveloperUrl() {
         return properties.getProperty("developerUrl");
     }
-    
+
     public String getAboutHeader() {
         return getProjectName() + " v" + getVersion();
     }
-    
+
     public String getAboutContent() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Author: ").append(getDeveloperName()).append("\n")
@@ -68,7 +88,7 @@ public class ProjectInfo {
                 .append("Website: ").append(getDeveloperUrl());
         return stringBuilder.toString();
     }
-    
+
     public List<Library> getLibrariesUsed() {
         List<Library> libraries = new ArrayList<>();
         libraries.add(new LibraryBuilder()
@@ -102,5 +122,5 @@ public class ProjectInfo {
                 .createLibrary());
         return libraries;
     }
-    
+
 }

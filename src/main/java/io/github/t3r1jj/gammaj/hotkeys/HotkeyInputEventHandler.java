@@ -56,7 +56,6 @@ public class HotkeyInputEventHandler implements EventHandler<KeyEvent> {
             source.setText("");
             source.setText(hotkey.getDisplayText());
         } catch (java.lang.IllegalArgumentException ex) {
-            System.out.println("ILLEGAL ARGUMENT");
             hotkey = null;
         }
     }

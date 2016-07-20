@@ -15,7 +15,7 @@
  */
 package io.github.t3r1jj.gammaj.controllers;
 
-import io.github.t3r1jj.gammaj.model.ViewModel;
+import io.github.t3r1jj.gammaj.ViewModel;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -37,7 +37,7 @@ public class SceneController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        if (viewModel.getAssistedAdjustmentProperty().get()) {
+        if (viewModel.assistedAdjustmentProperty().get()) {
             tabPane.getSelectionModel().select(assistedTab);
         } else {
             tabPane.getSelectionModel().select(manualTab);
@@ -48,22 +48,20 @@ public class SceneController implements Initializable {
             @Override
             public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab nowSelectedTab) {
                 if (nowSelectedTab.equals(assistedTab)) {
-                    viewModel.getAssistedAdjustmentProperty().set(true);
+                    viewModel.assistedAdjustmentProperty().set(true);
                 } else {
-                    viewModel.getAssistedAdjustmentProperty().set(false);
+                    viewModel.assistedAdjustmentProperty().set(false);
                 }
             }
         });
 
-        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
+        viewModel.assistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
 
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
                 if (nowAssisted) {
-                    System.out.println("SELECTING ASSITED");
                     tabPane.getSelectionModel().select(assistedTab);
                 } else {
-                    System.out.println("SELECTING MANUAL");
                     tabPane.getSelectionModel().select(manualTab);
                 }
             }

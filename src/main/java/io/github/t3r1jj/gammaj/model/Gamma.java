@@ -186,7 +186,6 @@ public class Gamma {
         }
         stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
         stringBuilder.append("}");
-        System.out.println(stringBuilder.toString());
     }
 
     double[][] getNormalizedGammaRamp() {

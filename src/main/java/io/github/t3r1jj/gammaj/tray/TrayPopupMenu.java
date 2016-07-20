@@ -17,7 +17,7 @@ package io.github.t3r1jj.gammaj.tray;
 
 import io.github.t3r1jj.gammaj.model.ColorProfile;
 import io.github.t3r1jj.gammaj.model.Display;
-import io.github.t3r1jj.gammaj.model.ViewModel;
+import io.github.t3r1jj.gammaj.ViewModel;
 import java.awt.CheckboxMenuItem;
 import java.awt.HeadlessException;
 import java.awt.Menu;
@@ -25,29 +25,18 @@ import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 
 class TrayPopupMenu extends PopupMenu {
 
-    private final ObservableList<ColorProfile> profiles;
-    private final ObjectProperty<ColorProfile> currentProfile;
-    private final ObservableList<Display> displays;
-    private final ObjectProperty<Display> currentDisplay;
-    private final BooleanProperty reset;
+    private final ViewModel viewModel;
     private final Menu profilesMenu = new Menu("Profiles");
     private final Menu displaysMenu = new Menu("Displays");
 
     public TrayPopupMenu(final TrayManager trayManager, final ViewModel viewModel) throws HeadlessException {
-        profiles = viewModel.getLoadedProfilesProperty().get();
-        currentProfile = viewModel.getCurrentProfileProperty();
-        displays = viewModel.getDisplaysProperty().get();
-        currentDisplay = viewModel.getCurrentDisplayProperty();
-        reset = viewModel.getResetProperty();
+        this.viewModel = viewModel;
         MenuItem deiconifyMenuItem = new MenuItem("GammaJ");
         deiconifyMenuItem.addActionListener(new DeiconifyActionListener(trayManager));
         add(deiconifyMenuItem);
@@ -57,7 +46,7 @@ class TrayPopupMenu extends PopupMenu {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                reset.set(!reset.get());
+                viewModel.resetProperty().set(!viewModel.resetProperty().get());
             }
         });
         add(profilesMenu);
@@ -79,16 +68,16 @@ class TrayPopupMenu extends PopupMenu {
 
     private void reinitializeProfilesMenu() {
         profilesMenu.removeAll();
-        for (final ColorProfile colorProfile : profiles) {
+        for (final ColorProfile colorProfile : viewModel.getLoadedProfiles()) {
             CheckboxMenuItem profileCheckbox = new CheckboxMenuItem(colorProfile.getName());
-            if (colorProfile.equals(currentProfile)) {
+            if (colorProfile.equals(viewModel.getCurrentProfile())) {
                 profileCheckbox.setState(true);
             }
             profileCheckbox.addActionListener(new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    currentProfile.set(colorProfile);
+                    viewModel.setCurrentProfile(colorProfile);
                 }
             });
             profilesMenu.add(profileCheckbox);
@@ -96,16 +85,16 @@ class TrayPopupMenu extends PopupMenu {
     }
 
     private void reinitializeDisplaysMenu() {
-        for (final Display display : displays) {
+        for (final Display display : viewModel.getDisplays()) {
             CheckboxMenuItem displayCheckbox = new CheckboxMenuItem(display.getName());
-            if (display.equals(currentDisplay)) {
+            if (display.equals(viewModel.getCurrentDisplay())) {
                 displayCheckbox.setState(true);
             }
             displayCheckbox.addActionListener(new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    currentDisplay.set(display);
+                    viewModel.setCurrentDisplay(display);
                 }
             });
             displaysMenu.add(displayCheckbox);
@@ -113,28 +102,21 @@ class TrayPopupMenu extends PopupMenu {
     }
 
     private void addModelListeners() {
-        profiles.addListener(new ListChangeListener<ColorProfile>() {
+        viewModel.loadedProfilesProperty().addListener(new ListChangeListener<ColorProfile>() {
 
             @Override
             public void onChanged(ListChangeListener.Change<? extends ColorProfile> c) {
                 reinitializeProfilesMenu();
             }
         });
-        currentProfile.addListener(new ChangeListener<ColorProfile>() {
+        viewModel.currentProfileProperty().addListener(new ChangeListener<ColorProfile>() {
 
             @Override
             public void changed(ObservableValue<? extends ColorProfile> observable, ColorProfile oldValue, ColorProfile newValue) {
                 reinitializeProfilesMenu();
             }
         });
-        displays.addListener(new ListChangeListener<Display>() {
-
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends Display> c) {
-                reinitializeDisplaysMenu();
-            }
-        });
-        currentDisplay.addListener(new ChangeListener<Display>() {
+        viewModel.currentDisplayProperty().addListener(new ChangeListener<Display>() {
 
             @Override
             public void changed(ObservableValue<? extends Display> observable, Display oldValue, Display newValue) {

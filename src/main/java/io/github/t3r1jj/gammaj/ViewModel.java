@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.t3r1jj.gammaj.model;
+package io.github.t3r1jj.gammaj;
 
 import com.sun.javafx.collections.ObservableListWrapper;
 import io.github.t3r1jj.gammaj.Configuration;
@@ -22,6 +22,11 @@ import io.github.t3r1jj.gammaj.hotkeys.HotkeyListener;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.hotkeys.ProfileHotkeyListener;
+import io.github.t3r1jj.gammaj.model.ColorProfile;
+import io.github.t3r1jj.gammaj.model.Display;
+import io.github.t3r1jj.gammaj.model.DisplayUtil;
+import io.github.t3r1jj.gammaj.model.Gamma;
+import io.github.t3r1jj.gammaj.model.MultiDisplay;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -41,6 +46,8 @@ import javafx.beans.property.SimpleSetProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import javafx.scene.control.Alert;
 import javafx.stage.StageStyle;
 
@@ -48,7 +55,7 @@ public class ViewModel {
 
     private static final ViewModel instance = new ViewModel();
     private final ListProperty<ColorProfile> loadedProfiles = new SimpleListProperty<>(new ObservableListWrapper<>(new ArrayList<ColorProfile>()));
-    private final ListProperty<Display> displays = new SimpleListProperty<>(new ObservableListWrapper<>(new ArrayList<Display>()));
+    private final List<Display> displays = new ArrayList<>();
     private final SetProperty<Gamma.Channel> selectedChannels = new SimpleSetProperty();
     private final HotkeysRunner hotkeysRunner = HotkeysRunner.getInstance();
     private final ObjectProperty<Display> currentDisplay = new SimpleObjectProperty<>();
@@ -165,7 +172,7 @@ public class ViewModel {
             }
 
         });
-        hotkeysRunner.registerHotkey(resetHotkey);
+        hotkeysRunner.reregisterApplicationHotkey(resetHotkey);
     }
 
     private void registerProfileHotkeys() {
@@ -207,11 +214,11 @@ public class ViewModel {
         }
     }
 
-    public ListProperty<ColorProfile> getLoadedProfilesProperty() {
+    public ListProperty<ColorProfile> loadedProfilesProperty() {
         return loadedProfiles;
     }
 
-    public SetProperty<Gamma.Channel> getSelectedChannelsProperty() {
+    public SetProperty<Gamma.Channel> selectedChannelsProperty() {
         return selectedChannels;
     }
 
@@ -219,36 +226,92 @@ public class ViewModel {
         return hotkeysRunner;
     }
 
-    public ListProperty<Display> getDisplaysProperty() {
+    public List<Display> getDisplays() {
         return displays;
     }
 
-    public ObjectProperty<Display> getCurrentDisplayProperty() {
+    public ObjectProperty<Display> currentDisplayProperty() {
         return currentDisplay;
     }
 
-    public ObjectProperty<ColorProfile> getCurrentProfileProperty() {
+    public Display getCurrentDisplay() {
+        return currentDisplay.get();
+    }
+
+    public void setCurrentDisplay(Display display) {
+        this.currentDisplay.set(display);
+    }
+
+    public ObjectProperty<ColorProfile> currentProfileProperty() {
         return currentProfile;
     }
 
-    public BooleanProperty getAssistedAdjustmentProperty() {
+    public ColorProfile getCurrentProfile() {
+        return currentProfile.get();
+    }
+
+    public void setCurrentProfile(ColorProfile colorProfile) {
+        this.currentProfile.set(colorProfile);
+    }
+
+    public BooleanProperty assistedAdjustmentProperty() {
         return assistedAdjustment;
     }
 
-    public BooleanProperty getDetachDisplay() {
+    public boolean isAssistedAdjustment() {
+        return assistedAdjustment.get();
+    }
+
+    public void setAssistedAdjustment(boolean isAssistedAdjustment) {
+        this.assistedAdjustment.set(isAssistedAdjustment);
+    }
+
+    public BooleanProperty detachDisplayProperty() {
         return detachDisplay;
     }
 
-    public BooleanProperty getResetProperty() {
+    public boolean isDetachDisplay() {
+        return detachDisplay.get();
+    }
+
+    public void setDetachDisplay(boolean isDetachDisplay) {
+        this.detachDisplay.set(isDetachDisplay);
+    }
+
+    public BooleanProperty resetProperty() {
         return reset;
     }
 
-    public BooleanProperty getIsSrgbProperty() {
+    public boolean isReset() {
+        return reset.get();
+    }
+
+    public void setReset(boolean isReset) {
+        this.reset.set(isReset);
+    }
+
+    public BooleanProperty isSrgbProperty() {
         return isSrgb;
+    }
+
+    public boolean isSrgb() {
+        return isSrgb.get();
+    }
+
+    public void setSrgb(boolean isSrgb) {
+        this.isSrgb.set(isSrgb);
     }
 
     public Configuration getConfiguration() {
         return configuration;
+    }
+
+    public ObservableList<ColorProfile> getLoadedProfiles() {
+        return loadedProfiles.get();
+    }
+
+    public ObservableSet<Gamma.Channel> getSelectedChannels() {
+        return selectedChannels.get();
     }
 
 }

@@ -15,16 +15,17 @@
  */
 package io.github.t3r1jj.gammaj.hotkeys;
 
-import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 public class HotkeysRunner {
 
     private static final HotkeysRunner instance = new HotkeysRunner();
     private final List<HotkeyPollerThread> registeredHotkeys = new ArrayList<>();
+    private final ObjectProperty<HotkeyPollerThread> applicationHotkey = new SimpleObjectProperty<>();
 
     private HotkeysRunner() {
     }
@@ -34,14 +35,13 @@ public class HotkeysRunner {
     }
 
     public HotkeyPollerThread getApplicationHotkey() {
-        return registeredHotkeys.get(0);
+        return applicationHotkey.get();
     }
 
     public void deregisterHotkey(HotkeyPollerThread hotkeyToDelete) {
         for (Iterator<HotkeyPollerThread> hotkeyIterator = registeredHotkeys.iterator(); hotkeyIterator.hasNext();) {
             HotkeyPollerThread hotkey = hotkeyIterator.next();
             if (hotkey.equals(hotkeyToDelete)) {
-                System.out.println("REMOVED " + hotkey);
                 hotkey.interrupt();
                 hotkeyIterator.remove();
                 return;
@@ -50,11 +50,11 @@ public class HotkeysRunner {
     }
 
     public boolean isRegisteredOnProfile(HotkeyPollerThread hotkey) {
-        return registeredHotkeys.indexOf(hotkey) > 0;
+        return registeredHotkeys.contains(hotkey);
     }
 
     public boolean isRegistered(HotkeyPollerThread hotkey) {
-        return registeredHotkeys.contains(hotkey);
+        return registeredHotkeys.contains(hotkey) || applicationHotkey.get().equals(hotkey);
     }
 
     public String registeredProfileInfo(HotkeyPollerThread hotkey) {
@@ -76,15 +76,19 @@ public class HotkeysRunner {
         if (!isRegistered(hotkey)) {
             hotkey.start();
             registeredHotkeys.add(hotkey);
-            System.out.println("ADDED: " + hotkey.getDisplayText());
         }
     }
 
     public void reregisterApplicationHotkey(HotkeyPollerThread newHotkey) {
-        deregisterHotkey(registeredHotkeys.get(0));
+        if (applicationHotkey.get() != null) {
+            applicationHotkey.get().interrupt();
+        }
         newHotkey.start();
-        registeredHotkeys.add(0, newHotkey);
-        System.out.println("READDED: " + newHotkey);
+        applicationHotkey.set(newHotkey);
+    }
+
+    public ObjectProperty<HotkeyPollerThread> applicationHotkeyProperty() {
+        return applicationHotkey;
     }
 
 }

@@ -15,13 +15,14 @@
  */
 package io.github.t3r1jj.gammaj.controllers;
 
+import io.github.t3r1jj.gammaj.info.HttpVersionUtility;
 import io.github.t3r1jj.gammaj.tray.TrayManager;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyInputEventHandler;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.info.Library;
 import io.github.t3r1jj.gammaj.info.ProjectInfo;
-import io.github.t3r1jj.gammaj.model.ViewModel;
+import io.github.t3r1jj.gammaj.ViewModel;
 import java.awt.AWTException;
 import java.io.IOException;
 import java.net.URL;
@@ -39,6 +40,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Cursor;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -47,16 +50,21 @@ import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
 
 public class MenuBarController implements Initializable {
 
-    ViewModel viewModel = ViewModel.getInstance();
+    private static final String colorPalettePath = "images/color_palette.png";
+
+    private final ViewModel viewModel;
     private final HostServices hostServices;
     private final TrayManager trayManager;
-    private final HotkeysRunner hotkeysRunner;
 
     private HotkeyInputEventHandler hotkeyInput;
 
@@ -65,16 +73,16 @@ public class MenuBarController implements Initializable {
     @FXML
     private CheckMenuItem srgbCheckMenuItem;
 
-    public MenuBarController(HostServices hostServices, TrayManager trayManager, HotkeysRunner hotkeysRunner) {
+    public MenuBarController(HostServices hostServices, TrayManager trayManager, ViewModel viewModel) {
         this.hostServices = hostServices;
         this.trayManager = trayManager;
-        this.hotkeysRunner = hotkeysRunner;
+        this.viewModel = viewModel;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        srgbCheckMenuItem.selectedProperty().bindBidirectional(viewModel.getIsSrgbProperty());
-        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
+        srgbCheckMenuItem.selectedProperty().bindBidirectional(viewModel.isSrgbProperty());
+        viewModel.assistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
 
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean isNowAssisted) {
@@ -92,7 +100,7 @@ public class MenuBarController implements Initializable {
 
     @FXML
     public void handleResetAction(ActionEvent event) {
-        viewModel.getResetProperty().setValue(!viewModel.getResetProperty().get());
+        viewModel.resetProperty().setValue(!viewModel.resetProperty().get());
     }
 
     @FXML
@@ -122,12 +130,12 @@ public class MenuBarController implements Initializable {
         Label hotkeyLabel = new Label("Reset global hotkey:  ");
         CheckBox detachDisplaysCheckBox = new CheckBox("Displays detached from whole screen");
 
-        detachDisplaysCheckBox.setSelected(viewModel.getDetachDisplay().get());
+        detachDisplaysCheckBox.setSelected(viewModel.detachDisplayProperty().get());
         CheckBox resetOnExitCheckbox = new CheckBox("Reset color on exit");
         resetOnExitCheckbox.setSelected(viewModel.getConfiguration().isColorResetOnExit());
         CheckBox loadOnStartCheckbox = new CheckBox("Load selected profiles on start");
         loadOnStartCheckbox.setSelected(viewModel.getConfiguration().getLoadCorrespongingProfiles());
-        viewModel.getDetachDisplay().bind(detachDisplaysCheckBox.selectedProperty());
+        viewModel.detachDisplayProperty().bind(detachDisplaysCheckBox.selectedProperty());
         GridPane outPane = new GridPane();
         outPane.setMaxWidth(Double.MAX_VALUE);
         outPane.setMaxHeight(Double.MAX_VALUE);
@@ -186,6 +194,63 @@ public class MenuBarController implements Initializable {
         viewModel.saveAndReset();
         Platform.exit();
         System.exit(0);
+    }
+
+    @FXML
+    private void handleColorPaletteAction(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.initStyle(StageStyle.UTILITY);
+        alert.setTitle("Color palette");
+        alert.setContentText(null);
+        alert.setHeaderText(null);
+        Image image = new Image(this.getClass().getClassLoader().getResourceAsStream(colorPalettePath));
+        alert.setGraphic(new ImageView(image));
+        alert.initModality(Modality.NONE);
+        alert.getDialogPane().setMaxWidth(image.getWidth()-100);
+        alert.show();
+    }
+
+    @FXML
+    private void handleUpdateAction(ActionEvent event) {
+        Scene scene = menuBar.getScene();
+        scene.setCursor(Cursor.WAIT);
+        HttpVersionUtility httpVerionUtility = new HttpVersionUtility();
+        try {
+            String version = httpVerionUtility.getVersion();
+            ProjectInfo projectInfo = new ProjectInfo();
+            if (projectInfo.isNewerVersion(version)) {
+                String link = httpVerionUtility.getLink();
+                scene.setCursor(Cursor.DEFAULT);
+                Alert linkAlert = new Alert(Alert.AlertType.INFORMATION);
+                linkAlert.initOwner(scene.getWindow());
+                linkAlert.setTitle("Version");
+                linkAlert.setHeaderText(null);
+                linkAlert.setContentText("There is a new version of GammaJ.");
+                ButtonType linkButton = new ButtonType("Download");
+                linkAlert.getButtonTypes().add(linkButton);
+                Optional<ButtonType> showAndWait = linkAlert.showAndWait();
+                if (showAndWait.get() == linkButton) {
+                    hostServices.showDocument(link);
+                }
+            } else {
+                scene.setCursor(Cursor.DEFAULT);
+                Alert upToDateAlert = new Alert(Alert.AlertType.INFORMATION);
+                upToDateAlert.initOwner(scene.getWindow());
+                upToDateAlert.setTitle("Version");
+                upToDateAlert.setHeaderText(null);
+                upToDateAlert.setContentText("Current version is up to date.");
+                upToDateAlert.showAndWait();
+            }
+        } catch (Exception ex) {
+            scene.setCursor(Cursor.DEFAULT);
+            Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.initOwner(scene.getWindow());
+            errorAlert.setTitle("Version");
+            errorAlert.setHeaderText(null);
+            errorAlert.setContentText("Could not connect with server to check version.");
+            errorAlert.showAndWait();
+        }
     }
 
     @FXML

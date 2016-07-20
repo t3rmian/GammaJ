@@ -103,12 +103,10 @@ public class HotkeyPollerThread extends Thread {
 
     @Override
     public void run() {
-        System.out.println("Starting run()");
         registerHotkey();
         WinUser.MSG msg = new WinUser.MSG();
         while (User32.INSTANCE.GetMessage(msg, null, 0, 0) != 0) {
             if (msg.message == WM_HOTKEY && msg.wParam.intValue() == id) {
-                System.out.println("Global listener caught: " + this);
                 Platform.runLater(new Runnable() {
 
                     @Override
@@ -127,7 +125,6 @@ public class HotkeyPollerThread extends Thread {
     @Override
     public void interrupt() {
         if (isAlive()) {
-            System.out.println("TRUE REMOVAL");
             this.stop();
         } else {
             throw new RuntimeException("Trying to close unstarted hotkey poller thread");
@@ -135,7 +132,6 @@ public class HotkeyPollerThread extends Thread {
     }
 
     private void registerHotkey() {
-        System.out.println("REGISTERING HOTKEY: " + this + " VK: " + getVkCode());
         User32.INSTANCE.RegisterHotKey(null, id, getModifiers(), getVkCode());
     }
 

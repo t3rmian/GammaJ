@@ -16,6 +16,7 @@
 package io.github.t3r1jj.gammaj.controllers;
 
 import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
+import io.github.t3r1jj.gammaj.ViewModel;
 import io.github.t3r1jj.gammaj.tray.TrayManager;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -26,12 +27,12 @@ public class ApplicationControllerFactory implements Callback<Class<?>, Object> 
 
     private final HostServices hostServices;
     private final TrayManager trayManager;
-    private final HotkeysRunner hotkeysRunner;
+    private final ViewModel viewModel;
 
-    public ApplicationControllerFactory(HostServices hostServices, TrayManager trayRunnable, HotkeysRunner hotkeysRunner) {
+    public ApplicationControllerFactory(HostServices hostServices, TrayManager trayRunnable, ViewModel viewModel) {
         this.hostServices = hostServices;
         this.trayManager = trayRunnable;
-        this.hotkeysRunner = hotkeysRunner;
+        this.viewModel = viewModel;
     }
 
     @Override
@@ -42,12 +43,14 @@ public class ApplicationControllerFactory implements Callback<Class<?>, Object> 
                     if (constructor.getParameterTypes()[0].equals(HostServices.class)) {
                         return constructor.newInstance(hostServices);
                     } else if (constructor.getParameterTypes()[0].equals(HotkeysRunner.class)) {
-                        return constructor.newInstance(hotkeysRunner);
+                        return constructor.newInstance(viewModel);
+                    } else if (constructor.getParameterTypes()[0].equals(ViewModel.class)) {
+                        return constructor.newInstance(viewModel);
                     }
                 } else if (constructor.getParameterCount() == 2 && Arrays.equals(constructor.getParameterTypes(), new Class<?>[]{HostServices.class, TrayManager.class})) {
                     return constructor.newInstance(hostServices, trayManager);
-                } else if (constructor.getParameterCount() == 3 && Arrays.equals(constructor.getParameterTypes(), new Class<?>[]{HostServices.class, TrayManager.class, HotkeysRunner.class})) {
-                    return constructor.newInstance(hostServices, trayManager, hotkeysRunner);
+                } else if (constructor.getParameterCount() == 3 && Arrays.equals(constructor.getParameterTypes(), new Class<?>[]{HostServices.class, TrayManager.class, ViewModel.class})) {
+                    return constructor.newInstance(hostServices, trayManager, viewModel);
                 }
             }
             return param.newInstance();

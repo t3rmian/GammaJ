@@ -32,6 +32,8 @@
         </Menu>
         <Menu text="Help">
             <items>
+                <MenuItem onAction="#handleColorPaletteAction" text="Color palette" />
+                <MenuItem onAction="#handleUpdateAction" text="Update check" />
                 <MenuItem onAction="#handleAboutAction" text="About" />
                 <MenuItem onAction="#handleLicenseAction" text="Licenses" />
             </items>

@@ -21,7 +21,7 @@ import io.github.t3r1jj.gammaj.hotkeys.ProfileHotkeyListener;
 import io.github.t3r1jj.gammaj.model.ColorProfile;
 import io.github.t3r1jj.gammaj.model.Display;
 import io.github.t3r1jj.gammaj.model.Gamma;
-import io.github.t3r1jj.gammaj.model.ViewModel;
+import io.github.t3r1jj.gammaj.ViewModel;
 import io.github.t3r1jj.gammaj.model.temperature.TemperatureSimpleFactory;
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +36,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
@@ -50,7 +51,7 @@ public abstract class AbstractTabController implements Initializable {
     public static final Paint GAMMA_CANVAS_BACKGROUND_COLOR = Color.WHITE;
     public static final Paint[] GAMMA_CANVAS_LINE_COLOR = new Paint[]{Color.RED, Color.GREEN, Color.BLUE};
 
-    ViewModel viewModel = ViewModel.getInstance();
+    protected ViewModel viewModel;
     protected HotkeyInputEventHandler hotkeyInput;
     protected final TemperatureSimpleFactory temperatureFactory = new TemperatureSimpleFactory();
     protected boolean loadingProfile;
@@ -58,6 +59,8 @@ public abstract class AbstractTabController implements Initializable {
 
     @FXML
     protected Canvas canvas;
+    @FXML
+    protected Button resetButton;
     @FXML
     protected ComboBox<Display> displaysComboBox;
     protected ChangeListener<Display> displayChangeListener;
@@ -75,33 +78,47 @@ public abstract class AbstractTabController implements Initializable {
     @FXML
     protected RadioButton rgbRadioButton;
 
+    public AbstractTabController(ViewModel viewModel) {
+        this.viewModel = viewModel;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         hotkeyInput = new HotkeyInputEventHandler(hotkeyTextField);
         hotkeyTextField.setOnKeyPressed(hotkeyInput);
 
-        profilesComboBox.itemsProperty().set(viewModel.getLoadedProfilesProperty());
-        profilesComboBox.valueProperty().bindBidirectional(viewModel.getCurrentProfileProperty());
+        profilesComboBox.itemsProperty().set(viewModel.loadedProfilesProperty());
+        profilesComboBox.valueProperty().bindBidirectional(viewModel.currentProfileProperty());
 
-        displaysComboBox.itemsProperty().set(viewModel.getDisplaysProperty());
-        displaysComboBox.valueProperty().bindBidirectional(viewModel.getCurrentDisplayProperty());
+        displaysComboBox.getItems().setAll(viewModel.getDisplays());
+        displaysComboBox.valueProperty().bindBidirectional(viewModel.currentDisplayProperty());
+        initializeTabListeners();
+        bindTabListeners();
+        resetButton.setText("Reset (" + viewModel.getHotkeysRunner().applicationHotkeyProperty().get().getDisplayText() + ")");
+        viewModel.getHotkeysRunner().applicationHotkeyProperty().addListener(new ChangeListener<HotkeyPollerThread>() {
+
+            @Override
+            public void changed(ObservableValue<? extends HotkeyPollerThread> observable, HotkeyPollerThread oldValue, HotkeyPollerThread newHotkey) {
+                resetButton.setText("Reset (" + newHotkey.getDisplayText() + ")");
+            }
+        });
+    }
+
+    private void initializeTabListeners() {
         profileChangeListener = new ChangeListener<ColorProfile>() {
-
+            
             @Override
             public void changed(ObservableValue<? extends ColorProfile> observable, ColorProfile oldValue, ColorProfile selectedColorProfile) {
                 if (selectedColorProfile == null) {
-                    System.out.println("Empty profile, NULL...");
                     hotkeyTextField.setText("");
                     return;
                 }
-                if (!viewModel.getLoadedProfilesProperty().contains(selectedColorProfile)) {
-                    System.out.println("Empty profile, ignoring...");
+                if (!viewModel.loadedProfilesProperty().contains(selectedColorProfile)) {
                     profilesComboBox.getSelectionModel().select(null);
                     loadLocalProfile();
                     return;
                 }
-                viewModel.getCurrentDisplayProperty().get().setColorProfile(selectedColorProfile);
-                System.out.println("Loading profile: " + selectedColorProfile);
+                viewModel.getCurrentDisplay().setColorProfile(selectedColorProfile);
                 loadLocalProfile();
             }
         };
@@ -120,26 +137,24 @@ public abstract class AbstractTabController implements Initializable {
                 handleResetButtonAction(null);
             }
         };
-        initializeTabListeners();
     }
 
     protected void addTabListeners() {
         profilesComboBox.getSelectionModel().selectedItemProperty().addListener(profileChangeListener);
         displaysComboBox.getSelectionModel().selectedItemProperty().addListener(displayChangeListener);
-        viewModel.getResetProperty().addListener(resetListener);
+        viewModel.resetProperty().addListener(resetListener);
     }
 
     protected void removeTabListeners() {
         profilesComboBox.getSelectionModel().selectedItemProperty().removeListener(profileChangeListener);
         displaysComboBox.getSelectionModel().selectedItemProperty().removeListener(displayChangeListener);
-        viewModel.getResetProperty().removeListener(resetListener);
+        viewModel.resetProperty().removeListener(resetListener);
     }
 
     @FXML
     protected void handleResetButtonAction(ActionEvent event) {
-        System.out.println("Reset button clicked!");
         resetProfile();
-        viewModel.getCurrentDisplayProperty().get().resetGammaRamp();
+        viewModel.getCurrentDisplay().resetGammaRamp();
         resetColorAdjustment();
         drawGammaRamp();
     }
@@ -158,18 +173,19 @@ public abstract class AbstractTabController implements Initializable {
                 handleSaveProfileAsButtonAction(event);
                 return;
             }
-            ColorProfile newColorProfile = viewModel.getCurrentDisplayProperty().get().getColorProfile().cloneOrSame(nameWrapper.get());
+            Display currentDisplay = viewModel.getCurrentDisplay();
+            ColorProfile newColorProfile = currentDisplay.getColorProfile().cloneOrSame(nameWrapper.get());
             saveModeSettings(newColorProfile);
-            newColorProfile.setGammaRamp(viewModel.getCurrentDisplayProperty().get().getGammaRamp());
-            if (newColorProfile.equals(viewModel.getCurrentDisplayProperty().get().getColorProfile())) {
-                HotkeyPollerThread oldHotkey = viewModel.getCurrentDisplayProperty().get().getColorProfile().getHotkey();
+            newColorProfile.setGammaRamp(currentDisplay.getGammaRamp());
+            if (newColorProfile.equals(currentDisplay.getColorProfile())) {
+                HotkeyPollerThread oldHotkey = currentDisplay.getColorProfile().getHotkey();
                 if (hotkeyInput.isEmpty() || !hotkeyInput.getHotkey().equals(oldHotkey)) {
                     viewModel.getHotkeysRunner().deregisterHotkey(oldHotkey);
                 }
                 registerInputHotkey(newColorProfile);
             } else {
                 registerInputHotkey(newColorProfile);
-                viewModel.getLoadedProfilesProperty().add(newColorProfile);
+                viewModel.loadedProfilesProperty().add(newColorProfile);
                 profilesComboBox.getSelectionModel().select(profilesComboBox.getItems().size() - 1);
             }
             newColorProfile.saveProfile(fullName);
@@ -181,7 +197,7 @@ public abstract class AbstractTabController implements Initializable {
             HotkeyPollerThread hotkey = hotkeyInput.getHotkey();
             if (!viewModel.getHotkeysRunner().isRegistered(hotkey)) {
                 newColorProfile.setHotkey(hotkey);
-                hotkey.setHotkeyListener(new ProfileHotkeyListener(viewModel.getCurrentProfileProperty(), newColorProfile));
+                hotkey.setHotkeyListener(new ProfileHotkeyListener(viewModel.currentProfileProperty(), newColorProfile));
                 viewModel.getHotkeysRunner().registerHotkey(hotkey);
             } else {
                 Alert errorAlert = new Alert(Alert.AlertType.ERROR);
@@ -199,54 +215,54 @@ public abstract class AbstractTabController implements Initializable {
     @FXML
     protected void handleRedSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         if (isNowSelected) {
-            viewModel.getSelectedChannelsProperty().clear();
-            viewModel.getSelectedChannelsProperty().add(Gamma.Channel.RED);
+            viewModel.selectedChannelsProperty().clear();
+            viewModel.selectedChannelsProperty().add(Gamma.Channel.RED);
         }
     }
 
     @FXML
     protected void handleGreenSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         if (isNowSelected) {
-            viewModel.getSelectedChannelsProperty().clear();
-            viewModel.getSelectedChannelsProperty().add(Gamma.Channel.GREEN);
+            viewModel.selectedChannelsProperty().clear();
+            viewModel.selectedChannelsProperty().add(Gamma.Channel.GREEN);
         }
     }
 
     @FXML
     protected void handleBlueSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         if (isNowSelected) {
-            viewModel.getSelectedChannelsProperty().clear();
-            viewModel.getSelectedChannelsProperty().add(Gamma.Channel.BLUE);
+            viewModel.selectedChannelsProperty().clear();
+            viewModel.selectedChannelsProperty().add(Gamma.Channel.BLUE);
         }
     }
 
     @FXML
     protected void handleRgbSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         if (isNowSelected) {
-            viewModel.getSelectedChannelsProperty().clear();
-            viewModel.getSelectedChannelsProperty().add(Gamma.Channel.RED);
-            viewModel.getSelectedChannelsProperty().add(Gamma.Channel.GREEN);
-            viewModel.getSelectedChannelsProperty().add(Gamma.Channel.BLUE);
+            viewModel.selectedChannelsProperty().clear();
+            viewModel.selectedChannelsProperty().add(Gamma.Channel.RED);
+            viewModel.selectedChannelsProperty().add(Gamma.Channel.GREEN);
+            viewModel.selectedChannelsProperty().add(Gamma.Channel.BLUE);
         }
     }
 
     protected void updateRgbRadioButtons() {
-        if (viewModel.getSelectedChannelsProperty().get().size() == 3) {
-            rgbRadioButton.selectedProperty().set(true);
+        if (viewModel.selectedChannelsProperty().get().size() == 3) {
+            rgbRadioButton.setSelected(true);
         } else {
-            Gamma.Channel channel = viewModel.getSelectedChannelsProperty().get().iterator().next();
+            Gamma.Channel channel = viewModel.selectedChannelsProperty().get().iterator().next();
             switch (channel) {
                 case RED:
-                    redRadioButton.selectedProperty().set(true);
+                    redRadioButton.setSelected(true);
                     break;
                 case GREEN:
-                    greenRadioButton.selectedProperty().set(true);
+                    greenRadioButton.setSelected(true);
                     break;
                 case BLUE:
-                    blueRadioButton.selectedProperty().set(true);
+                    blueRadioButton.setSelected(true);
                     break;
                 default:
-                    rgbRadioButton.selectedProperty().set(true);
+                    rgbRadioButton.setSelected(true);
             }
         }
     }
@@ -265,13 +281,13 @@ public abstract class AbstractTabController implements Initializable {
     }
 
     protected void removeProfileFromApp(ColorProfile profileToRemove) {
-        viewModel.getLoadedProfilesProperty().remove(profileToRemove);
+        viewModel.loadedProfilesProperty().remove(profileToRemove);
         profilesComboBox.getItems().remove(profileToRemove);
     }
 
     @FXML
     protected void handleDeleteProfileButtonAction(ActionEvent event) {
-        ChoiceDialog choiceDialog = new ChoiceDialog(profilesComboBox.getSelectionModel().getSelectedItem(), viewModel.getLoadedProfilesProperty());
+        ChoiceDialog choiceDialog = new ChoiceDialog(profilesComboBox.getSelectionModel().getSelectedItem(), viewModel.getLoadedProfiles());
         choiceDialog.initOwner(canvas.getScene().getWindow());
         choiceDialog.setTitle("Delete color profile");
         choiceDialog.setHeaderText(null);
@@ -286,9 +302,8 @@ public abstract class AbstractTabController implements Initializable {
     }
 
     protected void resetProfile() {
-        if (!loadingProfile && profilesComboBox.selectionModelProperty().get().getSelectedItem() != null) {
-            System.out.println("Resetting profile " + (profilesComboBox.selectionModelProperty().get() != null) + " " + profilesComboBox.selectionModelProperty().get().getSelectedItem());
-            viewModel.getCurrentDisplayProperty().get().setColorProfile(viewModel.getCurrentDisplayProperty().get().getColorProfile().cloneOrSame(""));
+        if (!loadingProfile && profilesComboBox.getSelectionModel().getSelectedItem() != null) {
+            viewModel.getCurrentDisplay().setColorProfile(viewModel.getCurrentDisplay().getColorProfile().cloneOrSame(""));
             profilesComboBox.getSelectionModel().select(null);
             hotkeyInput.setHotkey(null);
         }
@@ -303,7 +318,7 @@ public abstract class AbstractTabController implements Initializable {
         graphicsContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         graphicsContext.setLineWidth(1);
-        double[][] gammaRamp = viewModel.getCurrentDisplayProperty().get().getNormalizedGammaRamp();
+        double[][] gammaRamp = viewModel.getCurrentDisplay().getNormalizedGammaRamp();
         for (int i = 0; i < gammaRamp.length; i++) {
             graphicsContext.setStroke(GAMMA_CANVAS_LINE_COLOR[i]);
             graphicsContext.strokeLine(0, (1 - gammaRamp[i][0]) * canvas.getWidth(), 0, (1 - gammaRamp[i][0]) * canvas.getWidth());
@@ -317,7 +332,7 @@ public abstract class AbstractTabController implements Initializable {
 
     protected abstract void resetColorAdjustment();
 
-    protected abstract void initializeTabListeners();
+    protected abstract void bindTabListeners();
 
     protected abstract void saveModeSettings(ColorProfile newColorProfile);
 

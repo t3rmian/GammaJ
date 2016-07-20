@@ -6,11 +6,8 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.RadioButton?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Spinner?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToggleGroup?>
@@ -20,9 +17,9 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<AnchorPane id="AnchorPane" prefHeight="700.0" prefWidth="501.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.t3r1jj.gammaj.controllers.AssistedTabController">
+<AnchorPane id="AnchorPane" prefHeight="700.0" prefWidth="501.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.t3r1jj.gammaj.controllers.AssistedTabController">
     <children>
-        <Button layoutX="338.0" layoutY="63.0" onAction="#handleResetButtonAction" prefHeight="25.0" prefWidth="100.0" text="Reset" />
+        <Button fx:id="resetButton" layoutX="338.0" layoutY="63.0" onAction="#handleResetButtonAction" prefHeight="50.0" prefWidth="100.0" text="Reset" textAlignment="CENTER" wrapText="true" />
         <StackPane layoutX="14.0" layoutY="14.0" styleClass="canvasPane" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0">
             <children>
                 <Canvas fx:id="canvas" height="256" nodeOrientation="INHERIT" width="256" />

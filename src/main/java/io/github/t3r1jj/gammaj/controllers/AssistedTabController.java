@@ -19,6 +19,7 @@ import io.github.t3r1jj.gammaj.StringTemperatureConverter;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.model.ColorProfile;
 import io.github.t3r1jj.gammaj.model.Gamma;
+import io.github.t3r1jj.gammaj.ViewModel;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
@@ -52,35 +53,62 @@ public class AssistedTabController extends AbstractTabController {
     @FXML
     private Spinner temperatureSpinner;
 
+    public AssistedTabController(ViewModel viewModel) {
+        super(viewModel);
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         super.initialize(url, rb);
-        temperatureFactory.setIsSrgb(viewModel.getIsSrgbProperty().get());
-        viewModel.getIsSrgbProperty().addListener(new ChangeListener<Boolean>() {
+        temperatureFactory.setIsSrgb(viewModel.isSrgbProperty().get());
+        viewModel.isSrgbProperty().addListener(new ChangeListener<Boolean>() {
 
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean wasSrgb, Boolean isSrgb) {
                 if (!loadingProfile) {
                     resetProfile();
-                    System.out.println("SETTING SRGB: " + isSrgb);
                     temperatureFactory.setIsSrgb(isSrgb);
-                    viewModel.getCurrentDisplayProperty().get().setTemperature(temperatureFactory.createTemperature(temperatureSlider.valueProperty().getValue()));
-                    viewModel.getCurrentDisplayProperty().get().reinitialize();
+                    viewModel.getCurrentDisplay().setTemperature(temperatureFactory.createTemperature(temperatureSlider.valueProperty().getValue()));
+                    viewModel.getCurrentDisplay().reinitialize();
                     drawGammaRamp();
                 }
             }
         });
 
+        initializeSliders();
+        bindSliders();
+
+        if (viewModel.assistedAdjustmentProperty().get()) {
+            viewModel.setCurrentProfile(viewModel.getCurrentDisplay().getColorProfile());
+        }
+        viewModel.assistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
+                if (nowAssisted) {
+                    addTabListeners();
+                    resetProfile();
+                    updateRgbRadioButtons();
+                    drawGammaRamp();
+                } else {
+                    removeTabListeners();
+                }
+            }
+        });
+
+    }
+
+    private void initializeSliders() {
         gammaSlider.valueProperty().addListener(new ChangeListener<Number>() {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 if (!loadingProfile) {
                     resetProfile();
-                    for (Gamma.Channel channel : viewModel.getSelectedChannelsProperty()) {
-                        viewModel.getCurrentDisplayProperty().get().setGamma(channel, newValue.doubleValue());
+                    for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
+                        viewModel.getCurrentDisplay().setGamma(channel, newValue.doubleValue());
                     }
-                    viewModel.getCurrentDisplayProperty().get().reinitialize();
+                    viewModel.getCurrentDisplay().reinitialize();
                     drawGammaRamp();
                 }
             }
@@ -92,10 +120,10 @@ public class AssistedTabController extends AbstractTabController {
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 if (!loadingProfile) {
                     resetProfile();
-                    for (Gamma.Channel channel : viewModel.getSelectedChannelsProperty()) {
-                        viewModel.getCurrentDisplayProperty().get().setBrightness(channel, newValue.doubleValue());
+                    for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
+                        viewModel.getCurrentDisplay().setBrightness(channel, newValue.doubleValue());
                     }
-                    viewModel.getCurrentDisplayProperty().get().reinitialize();
+                    viewModel.getCurrentDisplay().reinitialize();
                     drawGammaRamp();
                 }
             }
@@ -107,10 +135,10 @@ public class AssistedTabController extends AbstractTabController {
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 if (!loadingProfile) {
                     resetProfile();
-                    for (Gamma.Channel channel : viewModel.getSelectedChannelsProperty()) {
-                        viewModel.getCurrentDisplayProperty().get().setContrastBilateral(channel, newValue.doubleValue());
+                    for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
+                        viewModel.getCurrentDisplay().setContrastBilateral(channel, newValue.doubleValue());
                     }
-                    viewModel.getCurrentDisplayProperty().get().reinitialize();
+                    viewModel.getCurrentDisplay().reinitialize();
                     drawGammaRamp();
                 }
             }
@@ -122,10 +150,10 @@ public class AssistedTabController extends AbstractTabController {
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 if (!loadingProfile) {
                     resetProfile();
-                    for (Gamma.Channel channel : viewModel.getSelectedChannelsProperty()) {
-                        viewModel.getCurrentDisplayProperty().get().setContrastUnilateral(channel, newValue.doubleValue());
+                    for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
+                        viewModel.getCurrentDisplay().setContrastUnilateral(channel, newValue.doubleValue());
                     }
-                    viewModel.getCurrentDisplayProperty().get().reinitialize();
+                    viewModel.getCurrentDisplay().reinitialize();
                     drawGammaRamp();
                 }
             }
@@ -140,59 +168,42 @@ public class AssistedTabController extends AbstractTabController {
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 resetProfile();
                 if (!loadingProfile) {
-                    viewModel.getCurrentDisplayProperty().get().setTemperature(temperatureFactory.createTemperature(newValue.doubleValue()));
-                    viewModel.getCurrentDisplayProperty().get().reinitialize();
+                    viewModel.getCurrentDisplay().setTemperature(temperatureFactory.createTemperature(newValue.doubleValue()));
+                    viewModel.getCurrentDisplay().reinitialize();
                 }
                 drawGammaRamp();
             }
 
         });
+    }
 
+    private void bindSliders() {
         Bindings.bindBidirectional(gammaSlider.valueProperty(), gammaSpinner.getValueFactory().valueProperty());
         Bindings.bindBidirectional(contrastBilateralSlider.valueProperty(), contrastBilateralSpinner.getValueFactory().valueProperty());
         Bindings.bindBidirectional(contrastUnilateralSlider.valueProperty(), contrastUnilateralSpinner.getValueFactory().valueProperty());
         Bindings.bindBidirectional(brightnessSlider.valueProperty(), brightnessSpinner.getValueFactory().valueProperty());
         Bindings.bindBidirectional(temperatureSlider.valueProperty(), temperatureSpinner.getValueFactory().valueProperty());
-
-        if (viewModel.getAssistedAdjustmentProperty().get()) {
-            viewModel.getCurrentProfileProperty().set(viewModel.getCurrentDisplayProperty().get().getColorProfile());
-        }
-        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
-                if (nowAssisted) {
-                    addTabListeners();
-                    resetProfile();
-                    updateRgbRadioButtons();
-                    drawGammaRamp();
-                } else {
-                    removeTabListeners();
-                }
-            }
-        });
     }
 
     @Override
     protected void loadLocalProfile() {
-        if (!"".equals(viewModel.getCurrentDisplayProperty().get().getColorProfile().getName()) && !viewModel.getCurrentDisplayProperty().get().getColorProfile().getModeIsAssissted()) {
-            viewModel.getAssistedAdjustmentProperty().set(false);
+        if (!"".equals(viewModel.getCurrentDisplay().getColorProfile().getName()) && !viewModel.getCurrentDisplay().getColorProfile().getModeIsAssissted()) {
+            viewModel.assistedAdjustmentProperty().set(false);
             return;
         }
         loadingProfile = true;
-        ColorProfile colorProfile = viewModel.getCurrentDisplayProperty().get().getColorProfile();
-        Gamma.Channel selectedChannel = viewModel.getSelectedChannelsProperty().iterator().next();
-        System.out.println("Starting profile load: " + colorProfile + ", gamma: " + colorProfile.getGamma(Gamma.Channel.RED));
+        ColorProfile colorProfile = viewModel.getCurrentDisplay().getColorProfile();
+        Gamma.Channel selectedChannel = viewModel.selectedChannelsProperty().iterator().next();
         gammaSpinner.getValueFactory().setValue(colorProfile.getGamma(selectedChannel));
         contrastBilateralSpinner.getValueFactory().setValue(colorProfile.getContrastBilateral(selectedChannel));
         contrastUnilateralSpinner.getValueFactory().setValue(colorProfile.getContrastUnilateral(selectedChannel));
         brightnessSpinner.getValueFactory().setValue(colorProfile.getBrightness(selectedChannel));
         temperatureSpinner.getValueFactory().setValue(colorProfile.getTemperature().getTemperature());
-        viewModel.getIsSrgbProperty().set(colorProfile.isTemperatureSrgb());
+        viewModel.isSrgbProperty().set(colorProfile.isTemperatureSrgb());
         HotkeyPollerThread hotkey = colorProfile.getHotkey();
         hotkeyInput.setHotkey(hotkey);
-        viewModel.getCurrentDisplayProperty().get().loadModelFromProfile(false);
-        viewModel.getCurrentDisplayProperty().get().reinitialize();
+        viewModel.getCurrentDisplay().loadModelFromProfile(false);
+        viewModel.getCurrentDisplay().reinitialize();
         drawGammaRamp();
         loadingProfile = false;
     }
@@ -207,8 +218,8 @@ public class AssistedTabController extends AbstractTabController {
     }
 
     @Override
-    protected void initializeTabListeners() {
-        if (viewModel.getAssistedAdjustmentProperty().get()) {
+    protected void bindTabListeners() {
+        if (viewModel.assistedAdjustmentProperty().get()) {
             addTabListeners();
         }
     }
@@ -217,10 +228,10 @@ public class AssistedTabController extends AbstractTabController {
     protected void handleInvertButtonAction(ActionEvent event) {
         if (!loadingProfile) {
             resetProfile();
-            for (Gamma.Channel channel : viewModel.getSelectedChannelsProperty()) {
-                viewModel.getCurrentDisplayProperty().get().invertGammaRamp(channel);
+            for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
+                viewModel.getCurrentDisplay().invertGammaRamp(channel);
             }
-            viewModel.getCurrentDisplayProperty().get().reinitialize();
+            viewModel.getCurrentDisplay().reinitialize();
             drawGammaRamp();
         }
     }
@@ -234,7 +245,6 @@ public class AssistedTabController extends AbstractTabController {
     protected void handleRedSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         super.handleRedSelectionChange(obs, wasPreviouslySelected, isNowSelected);
         if (isNowSelected) {
-            System.out.println("HANDLE R");
             loadLocalProfile();
         }
     }
@@ -260,8 +270,6 @@ public class AssistedTabController extends AbstractTabController {
         super.handleRgbSelectionChange(obs, wasPreviouslySelected, isNowSelected);
         if (isNowSelected) {
             loadLocalProfile();
-        } else {
-            System.out.println("RGB DESELECTED");
         }
     }
 
