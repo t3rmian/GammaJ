@@ -143,7 +143,7 @@ public class AssistedTabController extends AbstractTabController {
                     viewModel.getCurrentDisplayProperty().get().setTemperature(temperatureFactory.createTemperature(newValue.doubleValue()));
                     viewModel.getCurrentDisplayProperty().get().reinitialize();
                 }
-                    drawGammaRamp();
+                drawGammaRamp();
             }
 
         });
@@ -157,11 +157,28 @@ public class AssistedTabController extends AbstractTabController {
         if (viewModel.getAssistedAdjustmentProperty().get()) {
             viewModel.getCurrentProfileProperty().set(viewModel.getCurrentDisplayProperty().get().getColorProfile());
         }
-//        gammaRampPainter.drawGammaRamp(canvas, viewModel.getCurrentDisplayProperty().get());
+        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
+                if (nowAssisted) {
+                    addTabListeners();
+                    resetProfile();
+                    updateRgbRadioButtons();
+                    drawGammaRamp();
+                } else {
+                    removeTabListeners();
+                }
+            }
+        });
     }
 
     @Override
     protected void loadLocalProfile() {
+        if (!"".equals(viewModel.getCurrentDisplayProperty().get().getColorProfile().getName()) && !viewModel.getCurrentDisplayProperty().get().getColorProfile().getModeIsAssissted()) {
+            viewModel.getAssistedAdjustmentProperty().set(false);
+            return;
+        }
         loadingProfile = true;
         ColorProfile colorProfile = viewModel.getCurrentDisplayProperty().get().getColorProfile();
         Gamma.Channel selectedChannel = viewModel.getSelectedChannelsProperty().iterator().next();
@@ -176,7 +193,7 @@ public class AssistedTabController extends AbstractTabController {
         hotkeyInput.setHotkey(hotkey);
         viewModel.getCurrentDisplayProperty().get().loadModelFromProfile(false);
         viewModel.getCurrentDisplayProperty().get().reinitialize();
-                    drawGammaRamp();
+        drawGammaRamp();
         loadingProfile = false;
     }
 
@@ -205,6 +222,46 @@ public class AssistedTabController extends AbstractTabController {
             }
             viewModel.getCurrentDisplayProperty().get().reinitialize();
             drawGammaRamp();
+        }
+    }
+
+    @Override
+    protected void saveModeSettings(ColorProfile newColorProfile) {
+        newColorProfile.setModeIsAssissted(true);
+    }
+
+    @Override
+    protected void handleRedSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
+        super.handleRedSelectionChange(obs, wasPreviouslySelected, isNowSelected);
+        if (isNowSelected) {
+            System.out.println("HANDLE R");
+            loadLocalProfile();
+        }
+    }
+
+    @Override
+    protected void handleGreenSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
+        super.handleGreenSelectionChange(obs, wasPreviouslySelected, isNowSelected);
+        if (isNowSelected) {
+            loadLocalProfile();
+        }
+    }
+
+    @Override
+    protected void handleBlueSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
+        super.handleBlueSelectionChange(obs, wasPreviouslySelected, isNowSelected);
+        if (isNowSelected) {
+            loadLocalProfile();
+        }
+    }
+
+    @Override
+    protected void handleRgbSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
+        super.handleRgbSelectionChange(obs, wasPreviouslySelected, isNowSelected);
+        if (isNowSelected) {
+            loadLocalProfile();
+        } else {
+            System.out.println("RGB DESELECTED");
         }
     }
 

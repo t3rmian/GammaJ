@@ -39,6 +39,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.paint.Color;
@@ -65,6 +66,14 @@ public abstract class AbstractTabController implements Initializable {
     protected ChangeListener<ColorProfile> profileChangeListener;
     @FXML
     protected TextField hotkeyTextField;
+    @FXML
+    protected RadioButton redRadioButton;
+    @FXML
+    protected RadioButton greenRadioButton;
+    @FXML
+    protected RadioButton blueRadioButton;
+    @FXML
+    protected RadioButton rgbRadioButton;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -111,21 +120,7 @@ public abstract class AbstractTabController implements Initializable {
                 handleResetButtonAction(null);
             }
         };
-
         initializeTabListeners();
-        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean isNowAssisted) {
-                System.out.println("INVOKED TAB CHANGE");
-                if (isNowAssisted) {
-                    addTabListeners();
-                } else {
-                    removeListeners();
-                }
-            }
-        });
-
     }
 
     protected void addTabListeners() {
@@ -134,7 +129,7 @@ public abstract class AbstractTabController implements Initializable {
         viewModel.getResetProperty().addListener(resetListener);
     }
 
-    protected void removeListeners() {
+    protected void removeTabListeners() {
         profilesComboBox.getSelectionModel().selectedItemProperty().removeListener(profileChangeListener);
         displaysComboBox.getSelectionModel().selectedItemProperty().removeListener(displayChangeListener);
         viewModel.getResetProperty().removeListener(resetListener);
@@ -144,8 +139,8 @@ public abstract class AbstractTabController implements Initializable {
     protected void handleResetButtonAction(ActionEvent event) {
         System.out.println("Reset button clicked!");
         resetProfile();
-        resetColorAdjustment();
         viewModel.getCurrentDisplayProperty().get().resetGammaRamp();
+        resetColorAdjustment();
         drawGammaRamp();
     }
 
@@ -164,7 +159,7 @@ public abstract class AbstractTabController implements Initializable {
                 return;
             }
             ColorProfile newColorProfile = viewModel.getCurrentDisplayProperty().get().getColorProfile().cloneOrSame(nameWrapper.get());
-            newColorProfile.setModeIsAssissted(true);
+            saveModeSettings(newColorProfile);
             newColorProfile.setGammaRamp(viewModel.getCurrentDisplayProperty().get().getGammaRamp());
             if (newColorProfile.equals(viewModel.getCurrentDisplayProperty().get().getColorProfile())) {
                 HotkeyPollerThread oldHotkey = viewModel.getCurrentDisplayProperty().get().getColorProfile().getHotkey();
@@ -202,40 +197,57 @@ public abstract class AbstractTabController implements Initializable {
     }
 
     @FXML
-    public void handleRedSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
+    protected void handleRedSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         if (isNowSelected) {
             viewModel.getSelectedChannelsProperty().clear();
             viewModel.getSelectedChannelsProperty().add(Gamma.Channel.RED);
-            loadLocalProfile();
         }
     }
 
     @FXML
-    public void handleGreenSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
+    protected void handleGreenSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         if (isNowSelected) {
             viewModel.getSelectedChannelsProperty().clear();
             viewModel.getSelectedChannelsProperty().add(Gamma.Channel.GREEN);
-            loadLocalProfile();
         }
     }
 
     @FXML
-    public void handleBlueSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
+    protected void handleBlueSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         if (isNowSelected) {
             viewModel.getSelectedChannelsProperty().clear();
             viewModel.getSelectedChannelsProperty().add(Gamma.Channel.BLUE);
-            loadLocalProfile();
         }
     }
 
     @FXML
-    public void handleRgbSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
+    protected void handleRgbSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         if (isNowSelected) {
             viewModel.getSelectedChannelsProperty().clear();
             viewModel.getSelectedChannelsProperty().add(Gamma.Channel.RED);
             viewModel.getSelectedChannelsProperty().add(Gamma.Channel.GREEN);
             viewModel.getSelectedChannelsProperty().add(Gamma.Channel.BLUE);
-            loadLocalProfile();
+        }
+    }
+
+    protected void updateRgbRadioButtons() {
+        if (viewModel.getSelectedChannelsProperty().get().size() == 3) {
+            rgbRadioButton.selectedProperty().set(true);
+        } else {
+            Gamma.Channel channel = viewModel.getSelectedChannelsProperty().get().iterator().next();
+            switch (channel) {
+                case RED:
+                    redRadioButton.selectedProperty().set(true);
+                    break;
+                case GREEN:
+                    greenRadioButton.selectedProperty().set(true);
+                    break;
+                case BLUE:
+                    blueRadioButton.selectedProperty().set(true);
+                    break;
+                default:
+                    rgbRadioButton.selectedProperty().set(true);
+            }
         }
     }
 
@@ -278,6 +290,7 @@ public abstract class AbstractTabController implements Initializable {
             System.out.println("Resetting profile " + (profilesComboBox.selectionModelProperty().get() != null) + " " + profilesComboBox.selectionModelProperty().get().getSelectedItem());
             viewModel.getCurrentDisplayProperty().get().setColorProfile(viewModel.getCurrentDisplayProperty().get().getColorProfile().cloneOrSame(""));
             profilesComboBox.getSelectionModel().select(null);
+            hotkeyInput.setHotkey(null);
         }
     }
 
@@ -305,5 +318,7 @@ public abstract class AbstractTabController implements Initializable {
     protected abstract void resetColorAdjustment();
 
     protected abstract void initializeTabListeners();
+
+    protected abstract void saveModeSettings(ColorProfile newColorProfile);
 
 }

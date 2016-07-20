@@ -37,6 +37,12 @@ public class SceneController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        if (viewModel.getAssistedAdjustmentProperty().get()) {
+            tabPane.getSelectionModel().select(assistedTab);
+        } else {
+            tabPane.getSelectionModel().select(manualTab);
+        }
+        
         tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 
             @Override
@@ -45,6 +51,20 @@ public class SceneController implements Initializable {
                     viewModel.getAssistedAdjustmentProperty().set(true);
                 } else {
                     viewModel.getAssistedAdjustmentProperty().set(false);
+                }
+            }
+        });
+
+        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
+                if (nowAssisted) {
+                    System.out.println("SELECTING ASSITED");
+                    tabPane.getSelectionModel().select(assistedTab);
+                } else {
+                    System.out.println("SELECTING MANUAL");
+                    tabPane.getSelectionModel().select(manualTab);
                 }
             }
         });

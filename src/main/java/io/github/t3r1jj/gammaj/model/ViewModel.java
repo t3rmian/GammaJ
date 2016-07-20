@@ -71,8 +71,8 @@ public class ViewModel {
         if (singleDisplays.size() == 1) {
             displays.addAll(singleDisplays);
         } else {
-            displays.add(multiDisplay);
             displays.addAll(singleDisplays);
+            displays.add(multiDisplay);
         }
         detachDisplay.addListener(new ChangeListener<Boolean>() {
 
@@ -87,7 +87,7 @@ public class ViewModel {
                 configuration.save();
             }
         });
-        currentDisplay.set(multiDisplay);
+        currentDisplay.set(singleDisplays.get(0));
         if (configuration.isDisplaysDetached()) {
             detachDisplay.set(true);
         }
@@ -105,6 +105,7 @@ public class ViewModel {
                 }
             }
         }
+        assistedAdjustment.set(currentDisplay.get().getColorProfile().getModeIsAssissted());
     }
 
     public static ViewModel getInstance() {
@@ -137,7 +138,7 @@ public class ViewModel {
             errorBuilder.append(".");
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
             errorAlert.initStyle(StageStyle.UTILITY);
-errorAlert.setTitle("Profile loading error");
+            errorAlert.setTitle("Profile loading error");
             errorAlert.setHeaderText(null);
             errorAlert.setContentText("Could not load color profiles: " + errorBuilder.toString());
             errorAlert.showAndWait();

@@ -15,6 +15,8 @@
  */
 package io.github.t3r1jj.gammaj.controllers;
 
+import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
+import io.github.t3r1jj.gammaj.model.ColorProfile;
 import io.github.t3r1jj.gammaj.model.Gamma;
 import io.github.t3r1jj.gammaj.model.Gamma.Channel;
 import java.net.URL;
@@ -24,6 +26,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -50,17 +53,53 @@ public class ManualTabController extends AbstractTabController {
     public void initialize(URL url, ResourceBundle rb) {
         super.initialize(url, rb);
         canvas.setCursor(Cursor.CROSSHAIR);
+        initializeTable();
+        addCanvasHandlers();
+        if (!viewModel.getAssistedAdjustmentProperty().get()) {
+            viewModel.getCurrentProfileProperty().set(viewModel.getCurrentDisplayProperty().get().getColorProfile());
+        }
+        viewModel.getAssistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
+                if (!nowAssisted) {
+                    addTabListeners();
+                    resetProfile();
+                    loadRampViewModel();
+                    updateRgbRadioButtons();
+                    drawGammaRamp();
+                } else {
+                    removeTabListeners();
+                }
+            }
+        });
         drawGammaRamp();
     }
 
     @Override
     protected void loadLocalProfile() {
-//        throw new UnsupportedOperationException("Not supported yet.");
+        System.out.println(viewModel.getCurrentDisplayProperty().get().getColorProfile().getName() + " name");
+        System.out.println(viewModel.getCurrentDisplayProperty().get().getColorProfile().getModeIsAssissted() + " assisted?");
+        if (!"".equals(viewModel.getCurrentDisplayProperty().get().getColorProfile().getName()) && viewModel.getCurrentDisplayProperty().get().getColorProfile().getModeIsAssissted()) {
+            System.out.println("SETTING TRUE ASSOSTED");
+            viewModel.getAssistedAdjustmentProperty().set(true);
+            return;
+        }
+        loadingProfile = true;
+        ColorProfile colorProfile = viewModel.getCurrentDisplayProperty().get().getColorProfile();
+        viewModel.getIsSrgbProperty().set(colorProfile.isTemperatureSrgb());
+        HotkeyPollerThread hotkey = colorProfile.getHotkey();
+        hotkeyInput.setHotkey(hotkey);
+        viewModel.getCurrentDisplayProperty().get().loadModelFromProfile(true);
+        viewModel.getCurrentDisplayProperty().get().setDeviceGammaRamp();
+        loadRampViewModel();
+        drawGammaRamp();
+        loadingProfile = false;
     }
 
     @Override
     protected void resetColorAdjustment() {
-//        throw new UnsupportedOperationException("Not supported yet.");
+        loadRampViewModel();
     }
 
     @Override
@@ -68,7 +107,10 @@ public class ManualTabController extends AbstractTabController {
         if (!viewModel.getAssistedAdjustmentProperty().get()) {
             addTabListeners();
         }
-        initializeTable();
+
+    }
+
+    private void addCanvasHandlers() {
         canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
 
             @Override
@@ -238,7 +280,7 @@ public class ManualTabController extends AbstractTabController {
     }
 
     private void loadRampViewModel() {
-        int[][] gammaRamp = viewModel.getCurrentDisplayProperty().get().getColorProfile().getGammaRamp();
+        int[][] gammaRamp = viewModel.getCurrentDisplayProperty().get().getGammaRamp();
         for (int y = 0; y < gammaRamp.length; y++) {
             for (int x = 0; x < gammaRamp[y].length; x++) {
                 gammaRampProperties[y][x].set(gammaRamp[y][x]);
@@ -249,7 +291,6 @@ public class ManualTabController extends AbstractTabController {
     @Override
     protected void handleInvertButtonAction(ActionEvent event) {
         if (!loadingProfile) {
-            System.out.println("WUT");
             resetProfile();
             for (Gamma.Channel channel : viewModel.getSelectedChannelsProperty()) {
                 for (int x = 0; x < Gamma.CHANNEL_VALUES_COUNT; x++) {
@@ -260,5 +301,10 @@ public class ManualTabController extends AbstractTabController {
             viewModel.getCurrentDisplayProperty().get().setDeviceGammaRamp();
             drawGammaRamp();
         }
+    }
+
+    @Override
+    protected void saveModeSettings(ColorProfile newColorProfile) {
+        newColorProfile.setModeIsAssissted(false);
     }
 }

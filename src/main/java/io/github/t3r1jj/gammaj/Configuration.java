@@ -101,19 +101,17 @@ public class Configuration {
     public void setLoadCorrespondingProfiles(boolean load) {
         properties.setProperty("load_selected_profiles_on_start", String.valueOf(load));
     }
-    
+
     public boolean getLoadCorrespongingProfiles() {
         return Boolean.parseBoolean(properties.getProperty("load_selected_profiles_on_start", "true"));
     }
-    
+
     public void setCorrespondingProfiles(List<Display> displays) {
         for (Display display : displays) {
-            if (!"".equals(display.getColorProfile().getName())) {
-                properties.setProperty(display.getName().replace(" ", "_"), display.getColorProfile().getName());
-            }
+            properties.setProperty(display.getName().replace(" ", "_"), display.getColorProfile().getName());
         }
     }
-    
+
     public Map<Display, String> getCorrespondingProfiles(List<Display> displays) {
         Map<Display, String> correspondingProfiles = new HashMap<>();
         for (Display display : displays) {
