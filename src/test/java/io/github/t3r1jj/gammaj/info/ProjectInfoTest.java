@@ -15,8 +15,9 @@
  */
 package io.github.t3r1jj.gammaj.info;
 
-import io.github.t3r1jj.gammaj.info.ProjectInfo;
+import static org.hamcrest.CoreMatchers.is;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.Before;
 
@@ -58,6 +59,30 @@ public class ProjectInfoTest {
         String developerUrl = properties.getDeveloperUrl();
         System.out.println("Developer url: " + developerUrl);
         Assert.assertNotNull(developerUrl);
+    }
+
+    @Test
+    public void testIsIsNewerVersionMajorMinorPatch() {
+        Assume.assumeThat(properties.getVersion().contains("SNAPSHOT"), is(false));
+        Assert.assertTrue(properties.isNewerVersion("99.99.99"));
+    }
+
+    @Test
+    public void testIsIsNewerVersionMajor() {
+        Assume.assumeThat(properties.getVersion().contains("SNAPSHOT"), is(false));
+        Assert.assertTrue(properties.isNewerVersion("99.0.0"));
+    }
+
+    @Test
+    public void testIsIsNewerVersionPatch() {
+        Assume.assumeThat(properties.getVersion().contains("SNAPSHOT"), is(false));
+        Assert.assertTrue(properties.isNewerVersion("0.0.99"));
+    }
+
+    @Test
+    public void testIsIsNewerVersionSnapshot() {
+        Assume.assumeThat(properties.getVersion().contains("SNAPSHOT"), is(true));
+        Assert.assertTrue(!properties.isNewerVersion("99.99.99"));
     }
 
 }

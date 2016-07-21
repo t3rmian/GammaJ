@@ -106,7 +106,7 @@ public abstract class AbstractTabController implements Initializable {
 
     private void initializeTabListeners() {
         profileChangeListener = new ChangeListener<ColorProfile>() {
-            
+
             @Override
             public void changed(ObservableValue<? extends ColorProfile> observable, ColorProfile oldValue, ColorProfile selectedColorProfile) {
                 if (selectedColorProfile == null) {
@@ -115,11 +115,11 @@ public abstract class AbstractTabController implements Initializable {
                 }
                 if (!viewModel.loadedProfilesProperty().contains(selectedColorProfile)) {
                     profilesComboBox.getSelectionModel().select(null);
-                    loadLocalProfile();
+                    handleLoadLocalProfile();
                     return;
                 }
                 viewModel.getCurrentDisplay().setColorProfile(selectedColorProfile);
-                loadLocalProfile();
+                handleLoadLocalProfile();
             }
         };
 
@@ -309,8 +309,9 @@ public abstract class AbstractTabController implements Initializable {
         }
     }
 
-    @FXML
-    protected abstract void handleInvertButtonAction(ActionEvent event);
+    protected boolean isCurrentProfileDefault() {
+        return "".equals(viewModel.getCurrentDisplay().getColorProfile().getName());
+    }
 
     protected void drawGammaRamp() {
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
@@ -328,7 +329,10 @@ public abstract class AbstractTabController implements Initializable {
         }
     }
 
-    protected abstract void loadLocalProfile();
+    @FXML
+    protected abstract void handleInvertButtonAction(ActionEvent event);
+
+    protected abstract void handleLoadLocalProfile();
 
     protected abstract void resetColorAdjustment();
 

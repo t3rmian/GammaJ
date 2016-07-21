@@ -86,16 +86,23 @@ public class AssistedTabController extends AbstractTabController {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
                 if (nowAssisted) {
-                    addTabListeners();
-                    resetProfile();
+                    if (isCurrentDisplayProfileManual()) {
+                        resetProfile();
+                    }
+                    loadLocalProfile();
                     updateRgbRadioButtons();
                     drawGammaRamp();
+                    addTabListeners();
                 } else {
                     removeTabListeners();
                 }
             }
         });
 
+    }
+
+    private boolean isCurrentDisplayProfileManual() {
+        return !isCurrentProfileDefault() && !viewModel.getCurrentDisplay().getColorProfile().getModeIsAssissted();
     }
 
     private void initializeSliders() {
@@ -186,11 +193,15 @@ public class AssistedTabController extends AbstractTabController {
     }
 
     @Override
-    protected void loadLocalProfile() {
-        if (!"".equals(viewModel.getCurrentDisplay().getColorProfile().getName()) && !viewModel.getCurrentDisplay().getColorProfile().getModeIsAssissted()) {
+    protected void handleLoadLocalProfile() {
+        if (isCurrentDisplayProfileManual()) {
             viewModel.assistedAdjustmentProperty().set(false);
-            return;
+        } else {
+            loadLocalProfile();
         }
+    }
+
+    private void loadLocalProfile() {
         loadingProfile = true;
         ColorProfile colorProfile = viewModel.getCurrentDisplay().getColorProfile();
         Gamma.Channel selectedChannel = viewModel.selectedChannelsProperty().iterator().next();
@@ -245,7 +256,7 @@ public class AssistedTabController extends AbstractTabController {
     protected void handleRedSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         super.handleRedSelectionChange(obs, wasPreviouslySelected, isNowSelected);
         if (isNowSelected) {
-            loadLocalProfile();
+            handleLoadLocalProfile();
         }
     }
 
@@ -253,7 +264,7 @@ public class AssistedTabController extends AbstractTabController {
     protected void handleGreenSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         super.handleGreenSelectionChange(obs, wasPreviouslySelected, isNowSelected);
         if (isNowSelected) {
-            loadLocalProfile();
+            handleLoadLocalProfile();
         }
     }
 
@@ -261,7 +272,7 @@ public class AssistedTabController extends AbstractTabController {
     protected void handleBlueSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         super.handleBlueSelectionChange(obs, wasPreviouslySelected, isNowSelected);
         if (isNowSelected) {
-            loadLocalProfile();
+            handleLoadLocalProfile();
         }
     }
 
@@ -269,7 +280,7 @@ public class AssistedTabController extends AbstractTabController {
     protected void handleRgbSelectionChange(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
         super.handleRgbSelectionChange(obs, wasPreviouslySelected, isNowSelected);
         if (isNowSelected) {
-            loadLocalProfile();
+            handleLoadLocalProfile();
         }
     }
 

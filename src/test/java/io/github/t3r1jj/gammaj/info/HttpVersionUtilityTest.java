@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.t3r1jj.gammaj;
+package io.github.t3r1jj.gammaj.info;
 
-import io.github.t3r1jj.gammaj.info.HttpVersionUtility;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

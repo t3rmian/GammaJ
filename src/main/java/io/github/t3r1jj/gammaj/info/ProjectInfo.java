@@ -41,8 +41,8 @@ public class ProjectInfo {
         if (getVersion().contains("SNAPSHOT")) {
             return false;
         }
-        String[] subjectedVersioning = subjectedVersionPom.split(".");
-        String[] projectVersioning = getVersion().split(".");
+        String[] subjectedVersioning = subjectedVersionPom.split("\\.");
+        String[] projectVersioning = getVersion().split("\\.");
         try {
             for (int i = 0; i < subjectedVersioning.length; i++) {
                 int subjectedVersion = Integer.parseInt(subjectedVersioning[i]);
@@ -52,6 +52,7 @@ public class ProjectInfo {
                 }
             }
         } catch (Exception exception) {
+            Logger.getLogger(ProjectInfo.class.getName()).log(Level.SEVERE, null, exception);
             return false;
         }
         return false;
@@ -85,7 +86,8 @@ public class ProjectInfo {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Author: ").append(getDeveloperName()).append("\n")
                 .append("Email: ").append(getDeveloperEmail()).append("\n")
-                .append("Website: ").append(getDeveloperUrl());
+                .append("Website: ").append(getDeveloperUrl()).append("\n")
+                .append("Repository: ").append(getProjectUrl());
         return stringBuilder.toString();
     }
 

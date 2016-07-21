@@ -39,3 +39,7 @@
     -fx-opacity: 0;
     -fx-padding:-7;
 }
+
+.reset-button {
+    -fx-border-color: linear-gradient(rgb(255,0,0), rgb(0,255,0), rgb(0,0,255));
+}

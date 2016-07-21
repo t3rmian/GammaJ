@@ -19,6 +19,7 @@ import io.github.t3r1jj.gammaj.GammaJ;
 import io.github.t3r1jj.gammaj.ViewModel;
 import java.awt.AWTError;
 import java.awt.AWTException;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.SystemTray;
@@ -84,7 +85,8 @@ public class TrayManager {
         if (trayEnabled) {
             systemTray = SystemTray.getSystemTray();
             Image trayImageIcon = ImageIO.read(this.getClass().getClassLoader().getResourceAsStream(trayIconPath));
-            trayIcon = new TrayIcon(trayImageIcon);
+            Dimension trayIconSize = systemTray.getTrayIconSize();
+            TrayIcon trayIcon = new TrayIcon(trayImageIcon.getScaledInstance(trayIconSize.width, trayIconSize.height, Image.SCALE_SMOOTH));
             trayIcon.addActionListener(new DeiconifyActionListener(this));
             trayIcon.setPopupMenu(new TrayPopupMenu(this, viewModel));
             systemTray.add(trayIcon);

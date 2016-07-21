@@ -4,7 +4,7 @@
 
     <groupId>io.github.t3r1jj</groupId>
     <artifactId>GammaJ</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -143,11 +143,6 @@
             <artifactId>junit</artifactId>
             <version>4.10</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.guigarage</groupId>
-            <artifactId>flatter</artifactId>
-            <version>0.7</version>
         </dependency>
     </dependencies>
 </project>

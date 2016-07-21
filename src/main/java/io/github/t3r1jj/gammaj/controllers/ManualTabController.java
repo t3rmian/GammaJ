@@ -67,11 +67,14 @@ public class ManualTabController extends AbstractTabController {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
                 if (!nowAssisted) {
-                    addTabListeners();
-                    resetProfile();
+                    if (isCurrentProfileDefault() || isCurrentDisplayProfileAssisted()) {
+                        resetProfile();
+                    }
+                    loadLocalProfile();
                     loadRampViewModel();
                     updateRgbRadioButtons();
                     drawGammaRamp();
+                    addTabListeners();
                 } else {
                     removeTabListeners();
                 }
@@ -81,14 +84,17 @@ public class ManualTabController extends AbstractTabController {
     }
 
     @Override
-    protected void loadLocalProfile() {
-        if (!"".equals(viewModel.getCurrentDisplay().getColorProfile().getName()) && viewModel.getCurrentDisplay().getColorProfile().getModeIsAssissted()) {
+    protected void handleLoadLocalProfile() {
+        if (isCurrentDisplayProfileAssisted()) {
             viewModel.assistedAdjustmentProperty().set(true);
-            return;
+        } else {
+            loadLocalProfile();
         }
+    }
+
+    private void loadLocalProfile() {
         loadingProfile = true;
         ColorProfile colorProfile = viewModel.getCurrentDisplay().getColorProfile();
-        viewModel.isSrgbProperty().set(colorProfile.isTemperatureSrgb());
         HotkeyPollerThread hotkey = colorProfile.getHotkey();
         hotkeyInput.setHotkey(hotkey);
         viewModel.getCurrentDisplay().loadModelFromProfile(true);
@@ -96,6 +102,10 @@ public class ManualTabController extends AbstractTabController {
         loadRampViewModel();
         drawGammaRamp();
         loadingProfile = false;
+    }
+
+    private boolean isCurrentDisplayProfileAssisted() {
+        return !isCurrentProfileDefault() && viewModel.getCurrentDisplay().getColorProfile().getModeIsAssissted();
     }
 
     @Override
@@ -147,12 +157,12 @@ public class ManualTabController extends AbstractTabController {
             @Override
             public void handle(MouseEvent event) {
                 handleCanvasEvent(event);
+                resetProfile();
             }
         });
     }
 
     private void handleCanvasEvent(MouseEvent event) {
-        resetProfile();
         double eventX = event.getX();
         if (eventX < 0) {
             eventX = 0;
@@ -308,4 +318,11 @@ public class ManualTabController extends AbstractTabController {
     protected void saveModeSettings(ColorProfile newColorProfile) {
         newColorProfile.setModeIsAssissted(false);
     }
+
+    @Override
+    protected void resetProfile() {
+        super.resetProfile();
+        viewModel.getCurrentDisplay().getColorProfile().setGammaRamp(viewModel.getCurrentDisplay().getGammaRamp());
+    }
+
 }

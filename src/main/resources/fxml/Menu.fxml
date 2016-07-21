@@ -34,8 +34,9 @@
             <items>
                 <MenuItem onAction="#handleColorPaletteAction" text="Color palette" />
                 <MenuItem onAction="#handleUpdateAction" text="Update check" />
-                <MenuItem onAction="#handleAboutAction" text="About" />
+                <MenuItem onAction="#handleBugReportAction" text="Bug report" />
                 <MenuItem onAction="#handleLicenseAction" text="Licenses" />
+                <MenuItem onAction="#handleAboutAction" text="About" />
             </items>
         </Menu>
     </menus>

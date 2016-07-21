@@ -102,7 +102,7 @@ public class Configuration {
         properties.setProperty("load_selected_profiles_on_start", String.valueOf(load));
     }
 
-    public boolean getLoadCorrespongingProfiles() {
+    public boolean getLoadCorrespondingProfiles() {
         return Boolean.parseBoolean(properties.getProperty("load_selected_profiles_on_start", "true"));
     }
 

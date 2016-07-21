@@ -16,7 +16,6 @@
 package io.github.t3r1jj.gammaj;
 
 import com.sun.javafx.collections.ObservableListWrapper;
-import io.github.t3r1jj.gammaj.Configuration;
 import io.github.t3r1jj.gammaj.controllers.SceneController;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyListener;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
@@ -31,8 +30,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
@@ -98,21 +97,28 @@ public class ViewModel {
         if (configuration.isDisplaysDetached()) {
             detachDisplay.set(true);
         }
-        if (configuration.getLoadCorrespongingProfiles()) {
-            for (HashMap.Entry<Display, String> displayProfileEntry : configuration.getCorrespondingProfiles(displays).entrySet()) {
-                String profileName = displayProfileEntry.getValue();
-                if ("".equals(profileName)) {
-                    continue;
-                }
-                Display display = displayProfileEntry.getKey();
-                for (ColorProfile profile : loadedProfiles) {
-                    if (profile.getName().equals(profileName)) {
-                        display.setColorProfile(profile.clone(profileName));
-                    }
+        if (configuration.getLoadCorrespondingProfiles()) {
+            loadCorrespondingProfiles();
+        }
+        assistedAdjustment.set(currentDisplay.get().getColorProfile().getModeIsAssissted());
+    }
+
+    // Load starting from whole screen to not let it override single display settings load
+    private void loadCorrespondingProfiles() {
+        Map<Display, String> correspondingProfiles = configuration.getCorrespondingProfiles(displays);
+        for (int i = displays.size() - 1; i >= 0; i--) {
+            Display display = displays.get(i);
+            String profileName = correspondingProfiles.get(display);
+            if ("".equals(profileName)) {
+                display.setColorProfile(new ColorProfile(""));
+                continue;
+            }
+            for (ColorProfile profile : loadedProfiles) {
+                if (profile.getName().equals(profileName)) {
+                    display.setColorProfile(profile.clone(profileName));
                 }
             }
         }
-        assistedAdjustment.set(currentDisplay.get().getColorProfile().getModeIsAssissted());
     }
 
     public static ViewModel getInstance() {

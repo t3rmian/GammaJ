@@ -134,7 +134,7 @@ public class MenuBarController implements Initializable {
         CheckBox resetOnExitCheckbox = new CheckBox("Reset color on exit");
         resetOnExitCheckbox.setSelected(viewModel.getConfiguration().isColorResetOnExit());
         CheckBox loadOnStartCheckbox = new CheckBox("Load selected profiles on start");
-        loadOnStartCheckbox.setSelected(viewModel.getConfiguration().getLoadCorrespongingProfiles());
+        loadOnStartCheckbox.setSelected(viewModel.getConfiguration().getLoadCorrespondingProfiles());
         viewModel.detachDisplayProperty().bind(detachDisplaysCheckBox.selectedProperty());
         GridPane outPane = new GridPane();
         outPane.setMaxWidth(Double.MAX_VALUE);
@@ -206,7 +206,7 @@ public class MenuBarController implements Initializable {
         Image image = new Image(this.getClass().getClassLoader().getResourceAsStream(colorPalettePath));
         alert.setGraphic(new ImageView(image));
         alert.initModality(Modality.NONE);
-        alert.getDialogPane().setMaxWidth(image.getWidth()-100);
+        alert.getDialogPane().setMaxWidth(image.getWidth() - 100);
         alert.show();
     }
 
@@ -267,14 +267,9 @@ public class MenuBarController implements Initializable {
     }
 
     @FXML
-    private void handleAboutAction(ActionEvent event) {
+    private void handleBugReportAction(ActionEvent event) {
         ProjectInfo projectInfo = new ProjectInfo();
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.initOwner(menuBar.getScene().getWindow());
-        alert.setTitle("About");
-        alert.setHeaderText(projectInfo.getAboutHeader());
-        alert.setContentText(projectInfo.getAboutContent());
-        alert.showAndWait();
+        hostServices.showDocument(projectInfo.getProjectUrl() + "/issues");
     }
 
     @FXML
@@ -321,6 +316,17 @@ public class MenuBarController implements Initializable {
         } else {
             handleLicenseAction(null);
         }
+    }
+
+    @FXML
+    private void handleAboutAction(ActionEvent event) {
+        ProjectInfo projectInfo = new ProjectInfo();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.initOwner(menuBar.getScene().getWindow());
+        alert.setTitle("About");
+        alert.setHeaderText(projectInfo.getAboutHeader());
+        alert.setContentText(projectInfo.getAboutContent());
+        alert.showAndWait();
     }
 
 }
