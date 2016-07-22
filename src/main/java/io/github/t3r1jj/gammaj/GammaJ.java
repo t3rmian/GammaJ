@@ -16,9 +16,10 @@
 package io.github.t3r1jj.gammaj;
 
 import io.github.t3r1jj.gammaj.tray.TrayManager;
-import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.controllers.ApplicationControllerFactory;
+import io.github.t3r1jj.gammaj.info.OperatingSystemUtility;
 import io.github.t3r1jj.gammaj.jna.GammaRegistry;
+import io.github.t3r1jj.gammaj.model.GammaWinapiCallException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -32,6 +33,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javax.swing.JOptionPane;
 
 public class GammaJ extends Application {
 
@@ -45,7 +47,14 @@ public class GammaJ extends Application {
         trayManager = new TrayManager(stage, appIconPath, viewModel);
         FXMLLoader fXMLLoader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
         fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayManager, viewModel));
-        Parent root = fXMLLoader.load();
+        Parent root = null;
+        try {
+            root = fXMLLoader.load();
+        } catch (GammaWinapiCallException exception) {
+            JOptionPane.showConfirmDialog(null, "Could not initialize application. Winapi call exception.\n\nPossible causes:\n- missing GDI32.dll (unsupported operating system),\n- device with drivers that do not support downloadable gamma ramps in hardware.", "Initialization error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+            Platform.exit();
+            System.exit(1);
+        }
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
 
@@ -64,6 +73,15 @@ public class GammaJ extends Application {
                 System.exit(0);
             }
         });
+
+        if (OperatingSystemUtility.getOperatingSystemType() != OperatingSystemUtility.OperatingSystem.Windows) {
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.initOwner(stage);
+            errorAlert.setTitle("Windows not detected");
+            errorAlert.setHeaderText("Detected operating system other than Windows");
+            errorAlert.setContentText("Current version does not support operating systems other than Windows family (GDI32.dll).");
+            errorAlert.showAndWait();
+        }
 
         GammaRegistry gammaRegistry = new GammaRegistry();
         if (!gammaRegistry.isGammaExtensionInstalled()) {

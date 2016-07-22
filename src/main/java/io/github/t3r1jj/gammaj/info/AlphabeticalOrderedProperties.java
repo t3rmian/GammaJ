@@ -13,11 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.t3r1jj.gammaj.model;
+package io.github.t3r1jj.gammaj.info;
 
-public class GammaWinapiCallException extends RuntimeException {
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.TreeSet;
 
-    GammaWinapiCallException() {
+public class AlphabeticalOrderedProperties extends Properties {
+
+    public AlphabeticalOrderedProperties() {
     }
 
+    public AlphabeticalOrderedProperties(Properties defaults) {
+        super(defaults);
+    }
+    
+    @Override
+    public synchronized Enumeration<Object> keys() {
+        return Collections.enumeration(new TreeSet<>(super.keySet()));
+    }
 }

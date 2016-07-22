@@ -16,6 +16,7 @@
 package io.github.t3r1jj.gammaj;
 
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
+import io.github.t3r1jj.gammaj.info.AlphabeticalOrderedProperties;
 import io.github.t3r1jj.gammaj.info.ProjectInfo;
 import io.github.t3r1jj.gammaj.model.Display;
 import java.io.FileInputStream;
@@ -33,7 +34,7 @@ import javafx.scene.input.KeyEvent;
 public class Configuration {
 
     private static final String path = new ProjectInfo().getProjectName() + ".ini";
-    private final Properties properties = new Properties();
+    private final Properties properties = new AlphabeticalOrderedProperties();
 
     public boolean isTrayEnabled() {
         return Boolean.parseBoolean(properties.getProperty("tray_enabled", "false"));

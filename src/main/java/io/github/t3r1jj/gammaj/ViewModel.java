@@ -23,7 +23,7 @@ import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.hotkeys.ProfileHotkeyListener;
 import io.github.t3r1jj.gammaj.model.ColorProfile;
 import io.github.t3r1jj.gammaj.model.Display;
-import io.github.t3r1jj.gammaj.model.DisplayUtil;
+import io.github.t3r1jj.gammaj.model.DisplayUtility;
 import io.github.t3r1jj.gammaj.model.Gamma;
 import io.github.t3r1jj.gammaj.model.MultiDisplay;
 import java.io.File;
@@ -71,7 +71,7 @@ public class ViewModel {
         loadFileProfiles();
         registerHotkeys();
 
-        DisplayUtil screenUtil = new DisplayUtil();
+        DisplayUtility screenUtil = new DisplayUtility();
         final MultiDisplay multiDisplay = screenUtil.getMultiDisplay();
         List<Display> singleDisplays = multiDisplay.getDisplays();
         if (singleDisplays.size() == 1) {

@@ -19,7 +19,6 @@ import io.github.t3r1jj.gammaj.info.HttpVersionUtility;
 import io.github.t3r1jj.gammaj.tray.TrayManager;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyInputEventHandler;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
-import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.info.Library;
 import io.github.t3r1jj.gammaj.info.ProjectInfo;
 import io.github.t3r1jj.gammaj.ViewModel;
@@ -212,45 +211,79 @@ public class MenuBarController implements Initializable {
 
     @FXML
     private void handleUpdateAction(ActionEvent event) {
-        Scene scene = menuBar.getScene();
+        final Scene scene = menuBar.getScene();
         scene.setCursor(Cursor.WAIT);
-        HttpVersionUtility httpVerionUtility = new HttpVersionUtility();
-        try {
-            String version = httpVerionUtility.getVersion();
-            ProjectInfo projectInfo = new ProjectInfo();
-            if (projectInfo.isNewerVersion(version)) {
-                String link = httpVerionUtility.getLink();
-                scene.setCursor(Cursor.DEFAULT);
-                Alert linkAlert = new Alert(Alert.AlertType.INFORMATION);
-                linkAlert.initOwner(scene.getWindow());
-                linkAlert.setTitle("Version");
-                linkAlert.setHeaderText(null);
-                linkAlert.setContentText("There is a new version of GammaJ.");
-                ButtonType linkButton = new ButtonType("Download");
-                linkAlert.getButtonTypes().add(linkButton);
-                Optional<ButtonType> showAndWait = linkAlert.showAndWait();
-                if (showAndWait.get() == linkButton) {
-                    hostServices.showDocument(link);
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                HttpVersionUtility httpVerionUtility = new HttpVersionUtility();
+                try {
+                    final String version = httpVerionUtility.getVersion();
+                    ProjectInfo projectInfo = new ProjectInfo();
+                    if (projectInfo.isNewerVersion(version)) {
+                        handleNewerVersion(httpVerionUtility);
+                    } else {
+                        handleUpToDate();
+                    }
+                } catch (Exception ex) {
+                    handleVersionError(ex);
                 }
-            } else {
-                scene.setCursor(Cursor.DEFAULT);
-                Alert upToDateAlert = new Alert(Alert.AlertType.INFORMATION);
-                upToDateAlert.initOwner(scene.getWindow());
-                upToDateAlert.setTitle("Version");
-                upToDateAlert.setHeaderText(null);
-                upToDateAlert.setContentText("Current version is up to date.");
-                upToDateAlert.showAndWait();
             }
-        } catch (Exception ex) {
-            scene.setCursor(Cursor.DEFAULT);
-            Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
-            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-            errorAlert.initOwner(scene.getWindow());
-            errorAlert.setTitle("Version");
-            errorAlert.setHeaderText(null);
-            errorAlert.setContentText("Could not connect with server to check version.");
-            errorAlert.showAndWait();
-        }
+
+            private void handleVersionError(final Exception ex) {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        scene.setCursor(Cursor.DEFAULT);
+                        Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
+                        Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                        errorAlert.initOwner(scene.getWindow());
+                        errorAlert.setTitle("Version");
+                        errorAlert.setHeaderText(null);
+                        errorAlert.setContentText("Could not connect with server to check version.");
+                        errorAlert.showAndWait();
+                    }
+                });
+            }
+
+            private void handleUpToDate() {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        scene.setCursor(Cursor.DEFAULT);
+                        Alert upToDateAlert = new Alert(Alert.AlertType.INFORMATION);
+                        upToDateAlert.initOwner(scene.getWindow());
+                        upToDateAlert.setTitle("Version");
+                        upToDateAlert.setHeaderText(null);
+                        upToDateAlert.setContentText("Current version is up to date.");
+                        upToDateAlert.showAndWait();
+                    }
+                });
+            }
+
+            private void handleNewerVersion(HttpVersionUtility httpVerionUtility) throws IOException {
+                final String link = httpVerionUtility.getLink();
+                Platform.runLater(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        scene.setCursor(Cursor.DEFAULT);
+                        Alert linkAlert = new Alert(Alert.AlertType.INFORMATION);
+                        linkAlert.initOwner(scene.getWindow());
+                        linkAlert.setTitle("Version");
+                        linkAlert.setHeaderText(null);
+                        linkAlert.setContentText("There is a new version of GammaJ.");
+                        ButtonType linkButton = new ButtonType("Download");
+                        linkAlert.getButtonTypes().add(linkButton);
+                        Optional<ButtonType> showAndWait = linkAlert.showAndWait();
+                        if (showAndWait.get() == linkButton) {
+                            hostServices.showDocument(link);
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 
     @FXML

@@ -22,7 +22,7 @@ import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.platform.win32.WinUser.MONITORENUMPROC;
 import io.github.t3r1jj.gammaj.jna.MyGDI32;
 
-public class DisplayUtil {
+public class DisplayUtility {
 
     private int monitorsCount = 0;
 

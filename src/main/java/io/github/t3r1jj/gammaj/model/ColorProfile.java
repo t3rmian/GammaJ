@@ -17,6 +17,7 @@ package io.github.t3r1jj.gammaj.model;
 
 import io.github.t3r1jj.gammaj.model.temperature.RgbTemperature;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
+import io.github.t3r1jj.gammaj.info.AlphabeticalOrderedProperties;
 import io.github.t3r1jj.gammaj.model.Gamma.Channel;
 import io.github.t3r1jj.gammaj.model.temperature.TemperatureSimpleFactory;
 import java.io.File;
@@ -41,7 +42,7 @@ public class ColorProfile implements Cloneable {
      * @param name empty string initializes with default settings
      */
     public ColorProfile(String name) {
-        this.properties = new Properties();
+        this.properties = new AlphabeticalOrderedProperties();
         this.name = name;
         if ("".equals(name)) {
             initializeProperties();
@@ -66,7 +67,7 @@ public class ColorProfile implements Cloneable {
      * @param file
      */
     public ColorProfile(File file) {
-        this.properties = new Properties();
+        this.properties = new AlphabeticalOrderedProperties();
         this.file = file;
         this.name = file.getName().replaceFirst("[.][^.]+$", "");
     }
@@ -97,7 +98,7 @@ public class ColorProfile implements Cloneable {
     }
 
     public ColorProfile clone(String name) {
-        final Properties clonedProperties = new Properties();
+        final Properties clonedProperties = new AlphabeticalOrderedProperties();
         properties.forEach(new BiConsumer<Object, Object>() {
 
             @Override

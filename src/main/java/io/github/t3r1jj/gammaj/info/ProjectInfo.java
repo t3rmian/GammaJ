@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 
 public class ProjectInfo {
 
-    Properties properties = new Properties();
+    Properties properties = new AlphabeticalOrderedProperties();
 
     public ProjectInfo() {
         try {

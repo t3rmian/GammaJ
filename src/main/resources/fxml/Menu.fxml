@@ -12,8 +12,7 @@
         <Menu text="File">
             <items>
                 <MenuItem onAction="#handleSettingsAction" text="Settings" />
-            </items>
-            <items>
+                <SeparatorMenuItem/>
                 <MenuItem onAction="#handleExitAction" text="Exit" />
             </items>
         </Menu>
@@ -24,17 +23,18 @@
         </Menu>
         <Menu text="Colors">
             <items>
-                <MenuItem fx:id="resetMenuItem" text="Reset" onAction="#handleResetAction" />
-            </items>
-            <items>
                 <CheckMenuItem fx:id="srgbCheckMenuItem" text="sRGB Temperature" />
+                <SeparatorMenuItem/>
+                <MenuItem fx:id="resetMenuItem" text="Reset" onAction="#handleResetAction" />
             </items>
         </Menu>
         <Menu text="Help">
             <items>
                 <MenuItem onAction="#handleColorPaletteAction" text="Color palette" />
+                <SeparatorMenuItem/>
                 <MenuItem onAction="#handleUpdateAction" text="Update check" />
                 <MenuItem onAction="#handleBugReportAction" text="Bug report" />
+                <SeparatorMenuItem/>
                 <MenuItem onAction="#handleLicenseAction" text="Licenses" />
                 <MenuItem onAction="#handleAboutAction" text="About" />
             </items>

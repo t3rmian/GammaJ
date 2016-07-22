@@ -29,7 +29,7 @@ public class ScreenUtilTest {
     @Test
     public void testGetMonitorsCount() {
         System.out.println("getMonitorsCount");
-        DisplayUtil instance = new DisplayUtil();
+        DisplayUtility instance = new DisplayUtility();
         int expResult = 0;
         int result = instance.getMonitorsCount();
         assertTrue(expResult != result);
@@ -42,7 +42,7 @@ public class ScreenUtilTest {
     public void testGetMonitor() {
         System.out.println("getMonitor");
         int id = 0;
-        DisplayUtil instance = new DisplayUtil();
+        DisplayUtility instance = new DisplayUtility();
         Display result = instance.getMonitor(id);
         assertNotNull(result);
     }
