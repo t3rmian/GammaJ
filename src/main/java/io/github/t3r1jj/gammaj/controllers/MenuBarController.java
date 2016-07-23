@@ -313,23 +313,25 @@ public class MenuBarController implements Initializable {
         List<Library> libraries = projectInfo.getLibrariesUsed();
         StringBuilder stringBuilder = new StringBuilder();
         List<ButtonType> buttons = new ArrayList<>();
-        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.CANCEL_CLOSE);
         for (Library library : libraries) {
-            stringBuilder.append(library.nameLong)
+            stringBuilder.append("&#x2022; ")
+                    .append(library.nameLong)
                     .append(" v")
                     .append(library.version)
                     .append(" - ")
-                    .append(library.licenseShort);
+                    .append(library.licenseShort)
+                    .append("\n");
             ButtonType button = new ButtonType(library.nameShort);
             buttons.add(button);
         }
-        buttons.add(okButton);
         alert.setTitle("Licenses");
         alert.setHeaderText("Libraries used");
         alert.setContentText(stringBuilder.toString());
         alert.getButtonTypes().setAll(buttons);
+        alert.getButtonTypes().add(okButton);
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() != okButton) {
+        if (buttons.contains(result.get())) {
             Library pressedLibrary = libraries.get(buttons.indexOf(result.get()));
             showLibraryLicense(pressedLibrary);
         }
@@ -338,11 +340,12 @@ public class MenuBarController implements Initializable {
     private void showLibraryLicense(Library pressedLibrary) {
         Alert licenseAlert = new Alert(Alert.AlertType.INFORMATION);
         licenseAlert.initOwner(menuBar.getScene().getWindow());
-        licenseAlert.setTitle(pressedLibrary.nameLong);
+        licenseAlert.setTitle(pressedLibrary.nameLong + " license");
         licenseAlert.setHeaderText(null);
         licenseAlert.setContentText(pressedLibrary.licenseLong);
         ButtonType urlButton = new ButtonType("Website");
-        licenseAlert.getButtonTypes().addAll(urlButton);
+        licenseAlert.getButtonTypes().setAll(urlButton);
+        licenseAlert.getButtonTypes().add(new ButtonType("OK", ButtonBar.ButtonData.CANCEL_CLOSE));
         Optional<ButtonType> licenseResult = licenseAlert.showAndWait();
         if (licenseResult.get().equals(urlButton)) {
             hostServices.showDocument(pressedLibrary.url);
