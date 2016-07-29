@@ -27,6 +27,7 @@ public class HttpVersionUtility {
 
     private static final String VERSION_URL = "https://script.google.com/macros/s/AKfycbzuQ2SYv2qmrS03cNqz_Lc_Qxa4NePdHrwoc82ZElx65dinmSVx/exec?sheet=GammaJ&cellx=2&celly=2";
     private static final String LINK_URL = "https://script.google.com/macros/s/AKfycbzuQ2SYv2qmrS03cNqz_Lc_Qxa4NePdHrwoc82ZElx65dinmSVx/exec?sheet=GammaJ&cellx=3&celly=2";
+    private static final String DONATE_URL = "https://script.google.com/macros/s/AKfycbzuQ2SYv2qmrS03cNqz_Lc_Qxa4NePdHrwoc82ZElx65dinmSVx/exec?sheet=Donate&cellx=1&celly=1";
 
     private static HttpURLConnection httpConn;
 
@@ -42,6 +43,13 @@ public class HttpVersionUtility {
         String version = readSingleLineRespone();
         disconnect();
         return version;
+    }
+
+    public String getDonateLink() throws IOException {
+        requestGet(DONATE_URL);
+        String link = readSingleLineRespone();
+        disconnect();
+        return link;
     }
 
     private void requestGet(String urlString) throws MalformedURLException, IOException {

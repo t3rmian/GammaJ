@@ -265,7 +265,7 @@ public class MenuBarController implements Initializable {
             private void handleNewerVersion(HttpVersionUtility httpVerionUtility) throws IOException {
                 final String link = httpVerionUtility.getLink();
                 Platform.runLater(new Runnable() {
-                    
+
                     @Override
                     public void run() {
                         scene.setCursor(Cursor.DEFAULT);
@@ -362,7 +362,44 @@ public class MenuBarController implements Initializable {
         alert.setTitle("About");
         alert.setHeaderText(projectInfo.getAboutHeader());
         alert.setContentText(projectInfo.getAboutContent());
-        alert.showAndWait();
+        ButtonType donateButton = new ButtonType("Donate");
+        alert.getButtonTypes().setAll(donateButton);
+        alert.getButtonTypes().add(new ButtonType("OK", ButtonBar.ButtonData.CANCEL_CLOSE));
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == donateButton) {
+            final Scene scene = menuBar.getScene();
+            scene.setCursor(Cursor.WAIT);
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        final String donateLink = new HttpVersionUtility().getDonateLink();
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                scene.setCursor(Cursor.DEFAULT);
+                                hostServices.showDocument(donateLink);
+                            }
+                        });
+                    } catch (final Exception ex) {
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                scene.setCursor(Cursor.DEFAULT);
+                                Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
+                                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                                errorAlert.initOwner(scene.getWindow());
+                                errorAlert.setTitle("Donate");
+                                errorAlert.setHeaderText(null);
+                                errorAlert.setContentText("Could not connect with server.");
+                                errorAlert.showAndWait();
+                            }
+                        });
+                    }
+                }
+            }).start();
+        }
     }
 
 }
