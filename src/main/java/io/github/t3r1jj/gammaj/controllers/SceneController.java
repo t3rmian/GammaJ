@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2016 Damian Terlecki.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,18 +16,17 @@
 package io.github.t3r1jj.gammaj.controllers;
 
 import io.github.t3r1jj.gammaj.ViewModel;
-import java.net.URL;
-import java.util.ResourceBundle;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 public class SceneController implements Initializable {
 
-    ViewModel viewModel = ViewModel.getInstance();
+    private ViewModel viewModel = ViewModel.getInstance();
     @FXML
     private TabPane tabPane;
     @FXML
@@ -42,28 +41,20 @@ public class SceneController implements Initializable {
         } else {
             tabPane.getSelectionModel().select(manualTab);
         }
-        
-        tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 
-            @Override
-            public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab nowSelectedTab) {
-                if (nowSelectedTab.equals(assistedTab)) {
-                    viewModel.assistedAdjustmentProperty().set(true);
-                } else {
-                    viewModel.assistedAdjustmentProperty().set(false);
-                }
+        tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, nowSelectedTab) -> {
+            if (nowSelectedTab.equals(assistedTab)) {
+                viewModel.assistedAdjustmentProperty().set(true);
+            } else {
+                viewModel.assistedAdjustmentProperty().set(false);
             }
         });
 
-        viewModel.assistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
-                if (nowAssisted) {
-                    tabPane.getSelectionModel().select(assistedTab);
-                } else {
-                    tabPane.getSelectionModel().select(manualTab);
-                }
+        viewModel.assistedAdjustmentProperty().addListener((observable, oldValue, nowAssisted) -> {
+            if (nowAssisted) {
+                tabPane.getSelectionModel().select(assistedTab);
+            } else {
+                tabPane.getSelectionModel().select(manualTab);
             }
         });
     }

@@ -1,42 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<!--
+Copyright 2016 Damian Terlecki.
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.AnchorPane?>
 <MenuBar fx:id="menuBar" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.t3r1jj.gammaj.controllers.MenuBarController"
          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <menus>
-        <Menu text="File">
+        <Menu text="%file">
             <items>
-                <MenuItem onAction="#handleSettingsAction" text="Settings" />
+                <MenuItem onAction="#handleSettingsAction" text="%settings" />
                 <SeparatorMenuItem/>
-                <MenuItem onAction="#handleExitAction" text="Exit" />
+                <MenuItem onAction="#handleExitAction" text="%exit" />
             </items>
         </Menu>
-        <Menu text="View">
+        <Menu text="%view">
             <items>
-                <CheckMenuItem onAction="#handleTraySelectedChange" text="Tray on minimize" />
+                <CheckMenuItem onAction="#handleTraySelectedChange" text="%tray_on_minimize" />
             </items>
         </Menu>
-        <Menu text="Colors">
+        <Menu text="%colors">
             <items>
-                <CheckMenuItem fx:id="srgbCheckMenuItem" text="sRGB Temperature" />
+                <CheckMenuItem fx:id="srgbCheckMenuItem" text="%srgb_temperature" />
                 <SeparatorMenuItem/>
-                <MenuItem fx:id="resetMenuItem" text="Reset" onAction="#handleResetAction" />
+                <MenuItem fx:id="resetMenuItem" text="%reset" onAction="#handleResetAction" />
             </items>
         </Menu>
-        <Menu text="Help">
+        <Menu text="%help">
             <items>
-                <MenuItem onAction="#handleColorPaletteAction" text="Color palette" />
+                <MenuItem onAction="#handleColorPaletteAction" text="%color_palette" />
                 <SeparatorMenuItem/>
-                <MenuItem onAction="#handleUpdateAction" text="Update check" />
-                <MenuItem onAction="#handleBugReportAction" text="Bug report" />
+                <MenuItem onAction="#handleUpdateAction" text="%update_check" />
+                <MenuItem onAction="#handleBugReportAction" text="%bug_report" />
                 <SeparatorMenuItem/>
-                <MenuItem onAction="#handleLicenseAction" text="Licenses" />
-                <MenuItem onAction="#handleAboutAction" text="About" />
+                <MenuItem onAction="#handleLicenseAction" text="%licenses" />
+                <MenuItem onAction="#handleAboutAction" text="%about" />
             </items>
         </Menu>
     </menus>

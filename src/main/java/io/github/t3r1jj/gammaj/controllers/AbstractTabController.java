@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2016 Damian Terlecki.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +15,14 @@
  */
 package io.github.t3r1jj.gammaj.controllers;
 
+import io.github.t3r1jj.gammaj.ViewModel;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyInputEventHandler;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.hotkeys.ProfileHotkeyListener;
 import io.github.t3r1jj.gammaj.model.ColorProfile;
 import io.github.t3r1jj.gammaj.model.Display;
 import io.github.t3r1jj.gammaj.model.Gamma;
-import io.github.t3r1jj.gammaj.ViewModel;
 import io.github.t3r1jj.gammaj.model.temperature.TemperatureSimpleFactory;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -35,16 +30,15 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceDialog;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 public abstract class AbstractTabController implements Initializable {
 
@@ -77,13 +71,16 @@ public abstract class AbstractTabController implements Initializable {
     protected RadioButton blueRadioButton;
     @FXML
     protected RadioButton rgbRadioButton;
+    protected ResourceBundle resources;
 
-    public AbstractTabController(ViewModel viewModel) {
+
+    AbstractTabController(ViewModel viewModel) {
         this.viewModel = viewModel;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        this.resources = resources;
         hotkeyInput = new HotkeyInputEventHandler(hotkeyTextField);
         hotkeyTextField.setOnKeyPressed(hotkeyInput);
 
@@ -95,48 +92,27 @@ public abstract class AbstractTabController implements Initializable {
         initializeTabListeners();
         bindTabListeners();
         resetButton.setText("Reset (" + viewModel.getHotkeysRunner().applicationHotkeyProperty().get().getDisplayText() + ")");
-        viewModel.getHotkeysRunner().applicationHotkeyProperty().addListener(new ChangeListener<HotkeyPollerThread>() {
-
-            @Override
-            public void changed(ObservableValue<? extends HotkeyPollerThread> observable, HotkeyPollerThread oldValue, HotkeyPollerThread newHotkey) {
-                resetButton.setText("Reset (" + newHotkey.getDisplayText() + ")");
-            }
-        });
+        viewModel.getHotkeysRunner().applicationHotkeyProperty().addListener((observable, oldValue, newHotkey) ->
+                resetButton.setText("Reset (" + newHotkey.getDisplayText() + ")"));
     }
 
     private void initializeTabListeners() {
-        profileChangeListener = new ChangeListener<ColorProfile>() {
-
-            @Override
-            public void changed(ObservableValue<? extends ColorProfile> observable, ColorProfile oldValue, ColorProfile selectedColorProfile) {
-                if (selectedColorProfile == null) {
-                    hotkeyTextField.setText("");
-                    return;
-                }
-                if (!viewModel.loadedProfilesProperty().contains(selectedColorProfile)) {
-                    profilesComboBox.getSelectionModel().select(null);
-                    handleLoadLocalProfile();
-                    return;
-                }
-                viewModel.getCurrentDisplay().setColorProfile(selectedColorProfile);
+        profileChangeListener = (observable, oldValue, selectedColorProfile) -> {
+            if (selectedColorProfile == null) {
+                hotkeyTextField.setText("");
+                return;
+            }
+            if (!viewModel.loadedProfilesProperty().contains(selectedColorProfile)) {
+                profilesComboBox.getSelectionModel().select(null);
                 handleLoadLocalProfile();
+                return;
             }
+            viewModel.getCurrentDisplay().setColorProfile(selectedColorProfile);
+            handleLoadLocalProfile();
         };
 
-        displayChangeListener = new ChangeListener<Display>() {
-            @Override
-            public void changed(ObservableValue<? extends Display> observable, Display oldValue, Display selectedDisplay) {
-                profilesComboBox.getSelectionModel().select(selectedDisplay.getColorProfile());
-            }
-
-        };
-        resetListener = new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                handleResetButtonAction(null);
-            }
-        };
+        displayChangeListener = (observable, oldValue, selectedDisplay) -> profilesComboBox.getSelectionModel().select(selectedDisplay.getColorProfile());
+        resetListener = (observable, oldValue, newValue) -> handleResetButtonAction(null);
     }
 
     protected void addTabListeners() {
@@ -163,9 +139,9 @@ public abstract class AbstractTabController implements Initializable {
     protected void handleSaveProfileAsButtonAction(ActionEvent event) throws IOException, InterruptedException {
         TextInputDialog nameInputDialog = new TextInputDialog();
         nameInputDialog.initOwner(canvas.getScene().getWindow());
-        nameInputDialog.setTitle("Save as");
-        nameInputDialog.setHeaderText("Color profile");
-        nameInputDialog.setContentText("File name");
+        nameInputDialog.setTitle(resources.getString("save_as"));
+        nameInputDialog.setHeaderText(resources.getString("color_profile"));
+        nameInputDialog.setContentText(resources.getString("file_name"));
         Optional<String> nameWrapper = nameInputDialog.showAndWait();
         if (nameWrapper.isPresent()) {
             String fullName = nameWrapper.get() + ".properties";
@@ -202,10 +178,10 @@ public abstract class AbstractTabController implements Initializable {
             } else {
                 Alert errorAlert = new Alert(Alert.AlertType.ERROR);
                 errorAlert.initOwner(canvas.getScene().getWindow());
-                errorAlert.setTitle("Hotkey not registered");
+                errorAlert.setTitle(resources.getString("hotkey_not_registered"));
                 errorAlert.setHeaderText(null);
-                errorAlert.setContentText("Hotkey \"" + hotkey.getDisplayText()
-                        + "\" has not been registered because it is already assigned to profile \""
+                errorAlert.setContentText(resources.getString("hotkey") + " \"" + hotkey.getDisplayText()
+                        + "\" " + resources.getString("hotkey_not_registered_info") + " \""
                         + viewModel.getHotkeysRunner().registeredProfileInfo(hotkey) + "\"");
                 errorAlert.showAndWait();
             }
@@ -270,14 +246,11 @@ public abstract class AbstractTabController implements Initializable {
     protected boolean userWantsProfileOverwrite() throws IOException {
         Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmationAlert.initOwner(canvas.getScene().getWindow());
-        confirmationAlert.setTitle("Color profile already exists");
+        confirmationAlert.setTitle(resources.getString("color_profile_exists"));
         confirmationAlert.setHeaderText(null);
-        confirmationAlert.setContentText("Color profile with that name already exists. Do you want to overwrite it?");
+        confirmationAlert.setContentText(resources.getString("color_profile_exists_remove"));
         Optional<ButtonType> result = confirmationAlert.showAndWait();
-        if (result.get() != ButtonType.OK) {
-            return false;
-        }
-        return true;
+        return result.get() == ButtonType.OK;
     }
 
     protected void removeProfileFromApp(ColorProfile profileToRemove) {

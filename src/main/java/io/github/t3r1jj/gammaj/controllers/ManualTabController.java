@@ -62,22 +62,18 @@ public class ManualTabController extends AbstractTabController {
         if (!viewModel.assistedAdjustmentProperty().get()) {
             viewModel.setCurrentProfile(viewModel.getCurrentDisplay().getColorProfile());
         }
-        viewModel.assistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
-                if (!nowAssisted) {
-                    if (isCurrentProfileDefault() || isCurrentDisplayProfileAssisted()) {
-                        resetProfile();
-                    }
-                    loadLocalProfile();
-                    loadRampViewModel();
-                    updateRgbRadioButtons();
-                    drawGammaRamp();
-                    addTabListeners();
-                } else {
-                    removeTabListeners();
+        viewModel.assistedAdjustmentProperty().addListener((observable, oldValue, nowAssisted) -> {
+            if (!nowAssisted) {
+                if (isCurrentProfileDefault() || isCurrentDisplayProfileAssisted()) {
+                    resetProfile();
                 }
+                loadLocalProfile();
+                loadRampViewModel();
+                updateRgbRadioButtons();
+                drawGammaRamp();
+                addTabListeners();
+            } else {
+                removeTabListeners();
             }
         });
         drawGammaRamp();
@@ -122,43 +118,29 @@ public class ManualTabController extends AbstractTabController {
     }
 
     private void addCanvasHandlers() {
-        canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent event) {
-                double eventX = event.getX();
-                if (eventX < 0) {
-                    eventX = 0;
-                } else if (eventX > canvas.getWidth()) {
-                    eventX = canvas.getWidth();
-                }
-                double eventY = event.getY();
-                if (eventY < 0) {
-                    eventY = 0;
-                } else if (eventY > canvas.getHeight()) {
-                    eventY = canvas.getHeight();
-                }
-                lastXIndex = (int) ((eventX / canvas.getWidth()) * (Gamma.CHANNEL_VALUES_COUNT - 1));
-                lastValue = (int) (((canvas.getHeight() - eventY) / canvas.getHeight()) * Gamma.MAX_WORD);
-                handleCanvasEvent(event);
+        canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, event -> {
+            double eventX = event.getX();
+            if (eventX < 0) {
+                eventX = 0;
+            } else if (eventX > canvas.getWidth()) {
+                eventX = canvas.getWidth();
             }
+            double eventY = event.getY();
+            if (eventY < 0) {
+                eventY = 0;
+            } else if (eventY > canvas.getHeight()) {
+                eventY = canvas.getHeight();
+            }
+            lastXIndex = (int) ((eventX / canvas.getWidth()) * (Gamma.CHANNEL_VALUES_COUNT - 1));
+            lastValue = (int) (((canvas.getHeight() - eventY) / canvas.getHeight()) * Gamma.MAX_WORD);
+            handleCanvasEvent(event);
         });
 
-        canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
+        canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::handleCanvasEvent);
 
-            @Override
-            public void handle(MouseEvent event) {
-                handleCanvasEvent(event);
-            }
-        });
-
-        canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent event) {
-                handleCanvasEvent(event);
-                resetProfile();
-            }
+        canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
+            handleCanvasEvent(event);
+            resetProfile();
         });
     }
 
@@ -229,23 +211,19 @@ public class ManualTabController extends AbstractTabController {
             }
         }
 
-        TableColumn<Integer, String> firstTableColumn = new TableColumn<>("Channel\\Index");
+        TableColumn<Integer, String> firstTableColumn = new TableColumn<>(resources.getString("channel_index"));
         firstTableColumn.getStyleClass().add("my-header-column");
         firstTableColumn.sortableProperty().set(false);
-        firstTableColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Integer, String>, ObservableValue<String>>() {
-
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<Integer, String> param) {
-                switch (param.getValue()) {
-                    case 0:
-                        return new ReadOnlyStringWrapper("Red");
-                    case 1:
-                        return new ReadOnlyStringWrapper("Green");
-                    case 2:
-                        return new ReadOnlyStringWrapper("Blue");
-                    default:
-                        return new ReadOnlyStringWrapper("Invalid");
-                }
+        firstTableColumn.setCellValueFactory(param -> {
+            switch (param.getValue()) {
+                case 0:
+                    return new ReadOnlyStringWrapper(resources.getString("red"));
+                case 1:
+                    return new ReadOnlyStringWrapper(resources.getString("green"));
+                case 2:
+                    return new ReadOnlyStringWrapper(resources.getString("blue"));
+                default:
+                    return new ReadOnlyStringWrapper(resources.getString("invalid"));
             }
         });
         tableView.getColumns().add(firstTableColumn);
@@ -254,37 +232,26 @@ public class ManualTabController extends AbstractTabController {
             TableColumn<Integer, Integer> column = new TableColumn<>(String.valueOf(i));
             column.sortableProperty().set(false);
             final int columnIndex = i;
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Integer, Integer>, ObservableValue<Integer>>() {
-
-                @Override
-                public ObservableValue<Integer> call(TableColumn.CellDataFeatures<Integer, Integer> param) {
-                    return gammaRampProperties[param.getValue()][columnIndex].asObject();
-
-                }
-            });
+            column.setCellValueFactory(param -> gammaRampProperties[param.getValue()][columnIndex].asObject());
             column.setCellFactory(TextFieldTableCell.<Integer, Integer>forTableColumn(new IntegerStringConverter()));
-            column.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Integer, Integer>>() {
-
-                @Override
-                public void handle(TableColumn.CellEditEvent<Integer, Integer> event) {
-                    resetProfile();
-                    if (event.getNewValue() < 0) {
-                        gammaRampProperties[event.getRowValue()][columnIndex].set(0);
-                    } else if (event.getNewValue() > Gamma.MAX_WORD) {
-                        gammaRampProperties[event.getRowValue()][columnIndex].set(Gamma.MAX_WORD);
-                    } else {
-                        gammaRampProperties[event.getRowValue()][columnIndex].set(event.getNewValue());
-                    }
-                    viewModel.getCurrentDisplay().setGammaRampValue(Channel.getChannel(event.getRowValue()), columnIndex, event.getNewValue());
-                    viewModel.getCurrentDisplay().setDeviceGammaRamp();
-                    drawGammaRamp();
+            column.setOnEditCommit(event -> {
+                resetProfile();
+                if (event.getNewValue() < 0) {
+                    gammaRampProperties[event.getRowValue()][columnIndex].set(0);
+                } else if (event.getNewValue() > Gamma.MAX_WORD) {
+                    gammaRampProperties[event.getRowValue()][columnIndex].set(Gamma.MAX_WORD);
+                } else {
+                    gammaRampProperties[event.getRowValue()][columnIndex].set(event.getNewValue());
                 }
+                viewModel.getCurrentDisplay().setGammaRampValue(Channel.getChannel(event.getRowValue()), columnIndex, event.getNewValue());
+                viewModel.getCurrentDisplay().setDeviceGammaRamp();
+                drawGammaRamp();
             });
             column.setEditable(true);
             column.setPrefWidth(60);
             tableView.getColumns().add(column);
         }
-        tableView.getItems().addAll(Arrays.asList(new Integer[]{0, 1, 2}));
+        tableView.getItems().addAll(Arrays.asList(0, 1, 2));
         tableView.setEditable(true);
         tableView.setFixedCellSize(25);
         tableView.prefHeightProperty().bind(Bindings.size(tableView.getItems()).multiply(tableView.getFixedCellSize()).add(40));

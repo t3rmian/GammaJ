@@ -119,12 +119,12 @@ public class Gamma {
         for (int y = 0; y < newGammaRamp.length; y++) {
             if (invertedChannels[y]) {
                 for (int x = 0; x < newGammaRamp[0].length; x++) {
-                    int newGammaRampValue = calculateRampValue(newGammaRamp, x, y);
+                    int newGammaRampValue = calculateRampValue(x, y);
                     newGammaRamp[y][CHANNEL_VALUES_COUNT - x - 1] = newGammaRampValue;
                 }
             } else {
                 for (int x = 0; x < newGammaRamp[0].length; x++) {
-                    int newGammaRampValue = calculateRampValue(newGammaRamp, x, y);
+                    int newGammaRampValue = calculateRampValue(x, y);
                     newGammaRamp[y][x] = newGammaRampValue;
                 }
             }
@@ -133,7 +133,7 @@ public class Gamma {
         setDeviceGammaRamp();
     }
 
-    private int calculateRampValue(int[][] newGammaRamp, int x, int y) {
+    private int calculateRampValue(int x, int y) {
         double rampValue = Math.pow((double) x / (CHANNEL_VALUES_COUNT-1), gamma[y]) * MAX_WORD;
         rampValue += brightness[y];
         rampValue = contrastBilateral[y] * (rampValue - MAX_HALF_WORD) + MAX_HALF_WORD;

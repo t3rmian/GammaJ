@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2016 Damian Terlecki.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,14 @@
  */
 package io.github.t3r1jj.gammaj.controllers;
 
-import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.ViewModel;
+import io.github.t3r1jj.gammaj.hotkeys.HotkeysRunner;
 import io.github.t3r1jj.gammaj.tray.TrayManager;
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
 import javafx.application.HostServices;
 import javafx.util.Callback;
+
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
 
 public class ApplicationControllerFactory implements Callback<Class<?>, Object> {
 

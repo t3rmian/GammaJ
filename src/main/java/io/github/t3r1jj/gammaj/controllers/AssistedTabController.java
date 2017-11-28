@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2016 Damian Terlecki.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,19 +16,19 @@
 package io.github.t3r1jj.gammaj.controllers;
 
 import io.github.t3r1jj.gammaj.StringTemperatureConverter;
+import io.github.t3r1jj.gammaj.ViewModel;
 import io.github.t3r1jj.gammaj.hotkeys.HotkeyPollerThread;
 import io.github.t3r1jj.gammaj.model.ColorProfile;
 import io.github.t3r1jj.gammaj.model.Gamma;
-import io.github.t3r1jj.gammaj.ViewModel;
-import java.net.URL;
-import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
+
+import java.net.URL;
+import java.util.ResourceBundle;
 
 public class AssistedTabController extends AbstractTabController {
 
@@ -61,17 +61,13 @@ public class AssistedTabController extends AbstractTabController {
     public void initialize(URL url, ResourceBundle rb) {
         super.initialize(url, rb);
         temperatureFactory.setIsSrgb(viewModel.isSrgbProperty().get());
-        viewModel.isSrgbProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean wasSrgb, Boolean isSrgb) {
-                if (!loadingProfile) {
-                    resetProfile();
-                    temperatureFactory.setIsSrgb(isSrgb);
-                    viewModel.getCurrentDisplay().setTemperature(temperatureFactory.createTemperature(temperatureSlider.valueProperty().getValue()));
-                    viewModel.getCurrentDisplay().reinitialize();
-                    drawGammaRamp();
-                }
+        viewModel.isSrgbProperty().addListener((observable, wasSrgb, isSrgb) -> {
+            if (!loadingProfile) {
+                resetProfile();
+                temperatureFactory.setIsSrgb(isSrgb);
+                viewModel.getCurrentDisplay().setTemperature(temperatureFactory.createTemperature(temperatureSlider.valueProperty().getValue()));
+                viewModel.getCurrentDisplay().reinitialize();
+                drawGammaRamp();
             }
         });
 
@@ -81,21 +77,17 @@ public class AssistedTabController extends AbstractTabController {
         if (viewModel.assistedAdjustmentProperty().get()) {
             viewModel.setCurrentProfile(viewModel.getCurrentDisplay().getColorProfile());
         }
-        viewModel.assistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowAssisted) {
-                if (nowAssisted) {
-                    if (isCurrentDisplayProfileManual()) {
-                        resetProfile();
-                    }
-                    loadLocalProfile();
-                    updateRgbRadioButtons();
-                    drawGammaRamp();
-                    addTabListeners();
-                } else {
-                    removeTabListeners();
+        viewModel.assistedAdjustmentProperty().addListener((observable, oldValue, nowAssisted) -> {
+            if (nowAssisted) {
+                if (isCurrentDisplayProfileManual()) {
+                    resetProfile();
                 }
+                loadLocalProfile();
+                updateRgbRadioButtons();
+                drawGammaRamp();
+                addTabListeners();
+            } else {
+                removeTabListeners();
             }
         });
 
@@ -106,81 +98,56 @@ public class AssistedTabController extends AbstractTabController {
     }
 
     private void initializeSliders() {
-        gammaSlider.valueProperty().addListener(new ChangeListener<Number>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if (!loadingProfile) {
-                    resetProfile();
-                    for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
-                        viewModel.getCurrentDisplay().setGamma(channel, newValue.doubleValue());
-                    }
-                    viewModel.getCurrentDisplay().reinitialize();
-                    drawGammaRamp();
+        gammaSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (!loadingProfile) {
+                resetProfile();
+                for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
+                    viewModel.getCurrentDisplay().setGamma(channel, newValue.doubleValue());
                 }
+                viewModel.getCurrentDisplay().reinitialize();
+                drawGammaRamp();
             }
-
         });
-        brightnessSlider.valueProperty().addListener(new ChangeListener<Number>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if (!loadingProfile) {
-                    resetProfile();
-                    for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
-                        viewModel.getCurrentDisplay().setBrightness(channel, newValue.doubleValue());
-                    }
-                    viewModel.getCurrentDisplay().reinitialize();
-                    drawGammaRamp();
+        brightnessSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (!loadingProfile) {
+                resetProfile();
+                for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
+                    viewModel.getCurrentDisplay().setBrightness(channel, newValue.doubleValue());
                 }
+                viewModel.getCurrentDisplay().reinitialize();
+                drawGammaRamp();
             }
-
         });
-        contrastBilateralSlider.valueProperty().addListener(new ChangeListener<Number>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if (!loadingProfile) {
-                    resetProfile();
-                    for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
-                        viewModel.getCurrentDisplay().setContrastBilateral(channel, newValue.doubleValue());
-                    }
-                    viewModel.getCurrentDisplay().reinitialize();
-                    drawGammaRamp();
+        contrastBilateralSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (!loadingProfile) {
+                resetProfile();
+                for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
+                    viewModel.getCurrentDisplay().setContrastBilateral(channel, newValue.doubleValue());
                 }
+                viewModel.getCurrentDisplay().reinitialize();
+                drawGammaRamp();
             }
-
         });
-        contrastUnilateralSlider.valueProperty().addListener(new ChangeListener<Number>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if (!loadingProfile) {
-                    resetProfile();
-                    for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
-                        viewModel.getCurrentDisplay().setContrastUnilateral(channel, newValue.doubleValue());
-                    }
-                    viewModel.getCurrentDisplay().reinitialize();
-                    drawGammaRamp();
+        contrastUnilateralSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (!loadingProfile) {
+                resetProfile();
+                for (Gamma.Channel channel : viewModel.selectedChannelsProperty()) {
+                    viewModel.getCurrentDisplay().setContrastUnilateral(channel, newValue.doubleValue());
                 }
+                viewModel.getCurrentDisplay().reinitialize();
+                drawGammaRamp();
             }
-
         });
 
         temperatureSlider.setLabelFormatter(new StringTemperatureConverter());
 
-        temperatureSlider.valueProperty().addListener(new ChangeListener<Number>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                resetProfile();
-                if (!loadingProfile) {
-                    viewModel.getCurrentDisplay().setTemperature(temperatureFactory.createTemperature(newValue.doubleValue()));
-                    viewModel.getCurrentDisplay().reinitialize();
-                }
-                drawGammaRamp();
+        temperatureSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            resetProfile();
+            if (!loadingProfile) {
+                viewModel.getCurrentDisplay().setTemperature(temperatureFactory.createTemperature(newValue.doubleValue()));
+                viewModel.getCurrentDisplay().reinitialize();
             }
-
+            drawGammaRamp();
         });
     }
 

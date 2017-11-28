@@ -20,6 +20,9 @@ import io.github.t3r1jj.gammaj.controllers.ApplicationControllerFactory;
 import io.github.t3r1jj.gammaj.info.OperatingSystemUtility;
 import io.github.t3r1jj.gammaj.jna.GammaRegistry;
 import io.github.t3r1jj.gammaj.model.GammaWinapiCallException;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -45,7 +48,7 @@ public class GammaJ extends Application {
     public void start(Stage stage) throws Exception {
         stage.getIcons().add(new Image(this.getClass().getClassLoader().getResourceAsStream(appIconPath)));
         trayManager = new TrayManager(stage, appIconPath, viewModel);
-        FXMLLoader fXMLLoader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
+        FXMLLoader fXMLLoader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"), ResourceBundle.getBundle("bundles/LangBundle", Locale.forLanguageTag("pl")));
         fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayManager, viewModel));
         Parent root = null;
         try {

@@ -33,10 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.HostServices;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
@@ -52,7 +49,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
@@ -61,6 +57,7 @@ public class MenuBarController implements Initializable {
 
     private static final String colorPalettePath = "images/color_palette.png";
 
+    private ResourceBundle resources ;
     private final ViewModel viewModel;
     private final HostServices hostServices;
     private final TrayManager trayManager;
@@ -80,14 +77,9 @@ public class MenuBarController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        this.resources = rb;
         srgbCheckMenuItem.selectedProperty().bindBidirectional(viewModel.isSrgbProperty());
-        viewModel.assistedAdjustmentProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean isNowAssisted) {
-                srgbCheckMenuItem.setDisable(!isNowAssisted);
-            }
-        });
+        viewModel.assistedAdjustmentProperty().addListener((observable, oldValue, isNowAssisted) -> srgbCheckMenuItem.setDisable(!isNowAssisted));
         if (viewModel.getConfiguration().isTrayEnabled()) {
             try {
                 trayManager.enableTray(true);
@@ -106,33 +98,29 @@ public class MenuBarController implements Initializable {
     private void handleSettingsAction(ActionEvent event) {
         Alert settingsAlert = new Alert(Alert.AlertType.CONFIRMATION);
         settingsAlert.initOwner(menuBar.getScene().getWindow());
-        settingsAlert.setTitle("Settings");
+        settingsAlert.setTitle(resources.getString("settings"));
         settingsAlert.setHeaderText(null);
         final TextField hotkeyTextField = new TextField();
         hotkeyTextField.setEditable(false);
         HotkeyPollerThread resetHotkey = viewModel.getHotkeysRunner().getApplicationHotkey();
         hotkeyInput = new HotkeyInputEventHandler(hotkeyTextField);
         hotkeyInput.setHotkey(resetHotkey);
-        settingsAlert.getDialogPane().getScene().setOnKeyPressed(new EventHandler<KeyEvent>() {
-
-            @Override
-            public void handle(KeyEvent event) {
-                if (event.getCode() == KeyCode.ESCAPE) {
-                    event.consume();
-                    if (hotkeyTextField.focusedProperty().get()) {
-                        hotkeyInput.setHotkey(null);
-                    }
+        settingsAlert.getDialogPane().getScene().setOnKeyPressed(event1 -> {
+            if (event1.getCode() == KeyCode.ESCAPE) {
+                event1.consume();
+                if (hotkeyTextField.focusedProperty().get()) {
+                    hotkeyInput.setHotkey(null);
                 }
             }
         });
         hotkeyTextField.setOnKeyPressed(hotkeyInput);
-        Label hotkeyLabel = new Label("Reset global hotkey:  ");
-        CheckBox detachDisplaysCheckBox = new CheckBox("Displays detached from whole screen");
+        Label hotkeyLabel = new Label(resources.getString("global_reset_hotkey") + ":  ");
+        CheckBox detachDisplaysCheckBox = new CheckBox(resources.getString("displays_detached"));
 
         detachDisplaysCheckBox.setSelected(viewModel.detachDisplayProperty().get());
-        CheckBox resetOnExitCheckbox = new CheckBox("Reset color on exit");
+        CheckBox resetOnExitCheckbox = new CheckBox(resources.getString("reset_on_exit"));
         resetOnExitCheckbox.setSelected(viewModel.getConfiguration().isColorResetOnExit());
-        CheckBox loadOnStartCheckbox = new CheckBox("Load selected profiles on start");
+        CheckBox loadOnStartCheckbox = new CheckBox(resources.getString("load_on_start"));
         loadOnStartCheckbox.setSelected(viewModel.getConfiguration().getLoadCorrespondingProfiles());
         viewModel.detachDisplayProperty().bind(detachDisplaysCheckBox.selectedProperty());
         GridPane outPane = new GridPane();
@@ -166,18 +154,18 @@ public class MenuBarController implements Initializable {
         if (newHotkey == null) {
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
             errorAlert.initOwner(menuBar.getScene().getWindow());
-            errorAlert.setTitle("Hotkey not changed");
+            errorAlert.setTitle(resources.getString("hotkey_not_changed"));
             errorAlert.setHeaderText(null);
-            errorAlert.setContentText("Hotkey must not be empty in case of setting or loading entirely black/white profile you would not be able to reset it without system restart.");
+            errorAlert.setContentText(resources.getString("hotkey_warning"));
             errorAlert.showAndWait();
             handleSettingsAction(event);
         } else if (viewModel.getHotkeysRunner().isRegisteredOnProfile(newHotkey)) {
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
             errorAlert.initOwner(menuBar.getScene().getWindow());
-            errorAlert.setTitle("Hotkey not changed");
+            errorAlert.setTitle(resources.getString("hotkey_not_changed"));
             errorAlert.setHeaderText(null);
-            errorAlert.setContentText("Hotkey \"" + newHotkey.getDisplayText()
-                    + "\" has not been registered because it is already assigned to profile \""
+            errorAlert.setContentText(resources.getString("hotkey") + " \"" + newHotkey.getDisplayText()
+                    + "\" "+resources.getString("hotkey_not_registered_info")+" \""
                     + viewModel.getHotkeysRunner().registeredProfileInfo(newHotkey) + "\"");
             errorAlert.showAndWait();
             handleSettingsAction(event);
@@ -199,7 +187,7 @@ public class MenuBarController implements Initializable {
     private void handleColorPaletteAction(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.initStyle(StageStyle.UTILITY);
-        alert.setTitle("Color palette");
+        alert.setTitle(resources.getString("color_palette"));
         alert.setContentText(null);
         alert.setHeaderText(null);
         Image image = new Image(this.getClass().getClassLoader().getResourceAsStream(colorPalettePath));
@@ -232,54 +220,44 @@ public class MenuBarController implements Initializable {
             }
 
             private void handleVersionError(final Exception ex) {
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        scene.setCursor(Cursor.DEFAULT);
-                        Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
-                        Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-                        errorAlert.initOwner(scene.getWindow());
-                        errorAlert.setTitle("Version");
-                        errorAlert.setHeaderText(null);
-                        errorAlert.setContentText("Could not connect with server to check version.");
-                        errorAlert.showAndWait();
-                    }
+                Platform.runLater(() -> {
+                    scene.setCursor(Cursor.DEFAULT);
+                    Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.initOwner(scene.getWindow());
+                    errorAlert.setTitle(resources.getString("version"));
+                    errorAlert.setHeaderText(null);
+                    errorAlert.setContentText(resources.getString("version_error"));
+                    errorAlert.showAndWait();
                 });
             }
 
             private void handleUpToDate() {
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        scene.setCursor(Cursor.DEFAULT);
-                        Alert upToDateAlert = new Alert(Alert.AlertType.INFORMATION);
-                        upToDateAlert.initOwner(scene.getWindow());
-                        upToDateAlert.setTitle("Version");
-                        upToDateAlert.setHeaderText(null);
-                        upToDateAlert.setContentText("Current version is up to date.");
-                        upToDateAlert.showAndWait();
-                    }
+                Platform.runLater(() -> {
+                    scene.setCursor(Cursor.DEFAULT);
+                    Alert upToDateAlert = new Alert(Alert.AlertType.INFORMATION);
+                    upToDateAlert.initOwner(scene.getWindow());
+                    upToDateAlert.setTitle(resources.getString("version"));
+                    upToDateAlert.setHeaderText(null);
+                    upToDateAlert.setContentText(resources.getString("version_up_to_date"));
+                    upToDateAlert.showAndWait();
                 });
             }
 
             private void handleNewerVersion(HttpVersionUtility httpVerionUtility) throws IOException {
                 final String link = httpVerionUtility.getLink();
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        scene.setCursor(Cursor.DEFAULT);
-                        Alert linkAlert = new Alert(Alert.AlertType.INFORMATION);
-                        linkAlert.initOwner(scene.getWindow());
-                        linkAlert.setTitle("Version");
-                        linkAlert.setHeaderText(null);
-                        linkAlert.setContentText("There is a new version of GammaJ.");
-                        ButtonType linkButton = new ButtonType("Download");
-                        linkAlert.getButtonTypes().add(linkButton);
-                        Optional<ButtonType> showAndWait = linkAlert.showAndWait();
-                        if (showAndWait.get() == linkButton) {
-                            hostServices.showDocument(link);
-                        }
+                Platform.runLater(() -> {
+                    scene.setCursor(Cursor.DEFAULT);
+                    Alert linkAlert = new Alert(Alert.AlertType.INFORMATION);
+                    linkAlert.initOwner(scene.getWindow());
+                    linkAlert.setTitle(resources.getString("version"));
+                    linkAlert.setHeaderText(null);
+                    linkAlert.setContentText(resources.getString("version_new"));
+                    ButtonType linkButton = new ButtonType(resources.getString("download"));
+                    linkAlert.getButtonTypes().add(linkButton);
+                    Optional<ButtonType> showAndWait = linkAlert.showAndWait();
+                    if (showAndWait.get() == linkButton) {
+                        hostServices.showDocument(link);
                     }
                 });
             }
@@ -325,8 +303,8 @@ public class MenuBarController implements Initializable {
             ButtonType button = new ButtonType(library.nameShort);
             buttons.add(button);
         }
-        alert.setTitle("Licenses");
-        alert.setHeaderText("Libraries used");
+        alert.setTitle(resources.getString("licenses"));
+        alert.setHeaderText(resources.getString("components_used"));
         alert.setContentText(stringBuilder.toString());
         alert.getButtonTypes().setAll(buttons);
         alert.getButtonTypes().add(okButton);
@@ -340,10 +318,10 @@ public class MenuBarController implements Initializable {
     private void showLibraryLicense(Library pressedLibrary) {
         Alert licenseAlert = new Alert(Alert.AlertType.INFORMATION);
         licenseAlert.initOwner(menuBar.getScene().getWindow());
-        licenseAlert.setTitle(pressedLibrary.nameLong + " license");
+        licenseAlert.setTitle(pressedLibrary.nameLong + " " + resources.getString("license"));
         licenseAlert.setHeaderText(null);
         licenseAlert.setContentText(pressedLibrary.licenseLong);
-        ButtonType urlButton = new ButtonType("Website");
+        ButtonType urlButton = new ButtonType(resources.getString("website"));
         licenseAlert.getButtonTypes().setAll(urlButton);
         licenseAlert.getButtonTypes().add(new ButtonType("OK", ButtonBar.ButtonData.CANCEL_CLOSE));
         Optional<ButtonType> licenseResult = licenseAlert.showAndWait();
@@ -359,44 +337,34 @@ public class MenuBarController implements Initializable {
         ProjectInfo projectInfo = new ProjectInfo();
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.initOwner(menuBar.getScene().getWindow());
-        alert.setTitle("About");
+        alert.setTitle(resources.getString("about"));
         alert.setHeaderText(projectInfo.getAboutHeader());
         alert.setContentText(projectInfo.getAboutContent());
-        ButtonType donateButton = new ButtonType("Donate");
+        ButtonType donateButton = new ButtonType(resources.getString("donate"));
         alert.getButtonTypes().setAll(donateButton);
         alert.getButtonTypes().add(new ButtonType("OK", ButtonBar.ButtonData.CANCEL_CLOSE));
         Optional<ButtonType> result = alert.showAndWait();
         if (result.get() == donateButton) {
             final Scene scene = menuBar.getScene();
             scene.setCursor(Cursor.WAIT);
-            new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        final String donateLink = new HttpVersionUtility().getDonateLink();
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                scene.setCursor(Cursor.DEFAULT);
-                                hostServices.showDocument(donateLink);
-                            }
-                        });
-                    } catch (final Exception ex) {
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                scene.setCursor(Cursor.DEFAULT);
-                                Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
-                                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-                                errorAlert.initOwner(scene.getWindow());
-                                errorAlert.setTitle("Donate");
-                                errorAlert.setHeaderText(null);
-                                errorAlert.setContentText("Could not connect with server.");
-                                errorAlert.showAndWait();
-                            }
-                        });
-                    }
+            new Thread(() -> {
+                try {
+                    final String donateLink = new HttpVersionUtility().getDonateLink();
+                    Platform.runLater(() -> {
+                        scene.setCursor(Cursor.DEFAULT);
+                        hostServices.showDocument(donateLink);
+                    });
+                } catch (final Exception ex) {
+                    Platform.runLater(() -> {
+                        scene.setCursor(Cursor.DEFAULT);
+                        Logger.getLogger(MenuBarController.class.getName()).log(Level.SEVERE, null, ex);
+                        Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                        errorAlert.initOwner(scene.getWindow());
+                        errorAlert.setTitle(resources.getString("donate"));
+                        errorAlert.setHeaderText(null);
+                        errorAlert.setContentText(resources.getString("could_not_connect"));
+                        errorAlert.showAndWait();
+                    });
                 }
             }).start();
         }
