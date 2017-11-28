@@ -41,7 +41,7 @@ import javax.swing.JOptionPane;
 public class GammaJ extends Application {
 
     private static final String appIconPath = "images/tray_icon.png";
-    private final ViewModel viewModel = ViewModel.getInstance();
+    private ViewModel viewModel;
     private TrayManager trayManager;
 
     @Override
@@ -53,8 +53,9 @@ public class GammaJ extends Application {
         fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayManager, viewModel));
         Parent root = null;
         try {
+            viewModel = ViewModel.getInstance();
             root = fXMLLoader.load();
-        } catch (GammaWinapiCallException exception) {
+        } catch (UnsatisfiedLinkError | GammaWinapiCallException exception) {
             JOptionPane.showConfirmDialog(null, resources.getString("initialization_error_message"),
                     resources.getString("initialization_error"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             Platform.exit();
