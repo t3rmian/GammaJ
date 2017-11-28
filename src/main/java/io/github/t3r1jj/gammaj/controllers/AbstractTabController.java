@@ -262,9 +262,9 @@ public abstract class AbstractTabController implements Initializable {
     protected void handleDeleteProfileButtonAction(ActionEvent event) {
         ChoiceDialog choiceDialog = new ChoiceDialog(profilesComboBox.getSelectionModel().getSelectedItem(), viewModel.getLoadedProfiles());
         choiceDialog.initOwner(canvas.getScene().getWindow());
-        choiceDialog.setTitle("Delete color profile");
+        choiceDialog.setTitle(resources.getString("delete_color_profile"));
         choiceDialog.setHeaderText(null);
-        choiceDialog.setContentText("Select color profile to delete");
+        choiceDialog.setContentText(resources.getString("select_color_profile_delete"));
         Optional<ColorProfile> selectedProfile = choiceDialog.showAndWait();
         if (selectedProfile.isPresent()) {
             ColorProfile profileToDelete = selectedProfile.get();

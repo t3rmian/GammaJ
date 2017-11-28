@@ -48,13 +48,15 @@ public class GammaJ extends Application {
     public void start(Stage stage) throws Exception {
         stage.getIcons().add(new Image(this.getClass().getClassLoader().getResourceAsStream(appIconPath)));
         trayManager = new TrayManager(stage, appIconPath, viewModel);
-        FXMLLoader fXMLLoader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"), ResourceBundle.getBundle("bundles/LangBundle", Locale.forLanguageTag("pl")));
+        ResourceBundle resources = ResourceBundle.getBundle("bundles/LangBundle");
+        FXMLLoader fXMLLoader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"), resources);
         fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayManager, viewModel));
         Parent root = null;
         try {
             root = fXMLLoader.load();
         } catch (GammaWinapiCallException exception) {
-            JOptionPane.showConfirmDialog(null, "Could not initialize application. Winapi call exception.\n\nPossible causes:\n- missing GDI32.dll (unsupported operating system),\n- device with drivers that do not support downloadable gamma ramps in hardware.", "Initialization error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showConfirmDialog(null, resources.getString("initialization_error_message"),
+                    resources.getString("initialization_error"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             Platform.exit();
             System.exit(1);
         }
@@ -67,22 +69,18 @@ public class GammaJ extends Application {
         stage.show();
         stage.setMaxWidth(stage.getWidth());
         stage.setMaxHeight(stage.getHeight());
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-
-            @Override
-            public void handle(WindowEvent event) {
-                viewModel.saveAndReset();
-                Platform.exit();
-                System.exit(0);
-            }
+        stage.setOnCloseRequest(event -> {
+            viewModel.saveAndReset();
+            Platform.exit();
+            System.exit(0);
         });
 
         if (OperatingSystemUtility.getOperatingSystemType() != OperatingSystemUtility.OperatingSystem.Windows) {
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
             errorAlert.initOwner(stage);
-            errorAlert.setTitle("Windows not detected");
-            errorAlert.setHeaderText("Detected operating system other than Windows");
-            errorAlert.setContentText("Current version does not support operating systems other than Windows family (GDI32.dll).");
+            errorAlert.setTitle(resources.getString("windows_not_detected"));
+            errorAlert.setHeaderText(resources.getString("windows_not_detected_header"));
+            errorAlert.setContentText(resources.getString("windows_not_detected_content"));
             errorAlert.showAndWait();
         }
 
@@ -92,17 +90,17 @@ public class GammaJ extends Application {
                 gammaRegistry.installGammaExtension();
                 Alert infoAlert = new Alert(Alert.AlertType.INFORMATION);
                 infoAlert.initOwner(stage);
-                infoAlert.setTitle("Extended gamma installed");
-                infoAlert.setHeaderText("System needs reboot");
-                infoAlert.setContentText("Extended gamma has been installed and system reboot is needed. Entirely custom color adjustment will be then enabled.");
+                infoAlert.setTitle(resources.getString("extended_gamma_installed"));
+                infoAlert.setHeaderText(resources.getString("extended_gamma_installed_header"));
+                infoAlert.setContentText(resources.getString("extended_gamma_installed_content"));
                 infoAlert.showAndWait();
             } catch (Exception ex) {
                 Logger.getLogger(GammaRegistry.class.getName()).log(Level.SEVERE, null, ex);
                 Alert errorAlert = new Alert(Alert.AlertType.ERROR);
                 errorAlert.initOwner(stage);
-                errorAlert.setTitle("Extended gamma not installed");
-                errorAlert.setHeaderText("Cannot access registry");
-                errorAlert.setContentText("Extended gamma has not been installed. This application needs to add registry entry. Only then entirely custom color adjustment will be enabled.");
+                errorAlert.setTitle(resources.getString("extended_gamma_not_installed"));
+                errorAlert.setHeaderText(resources.getString("extended_gamma_not_installed_header"));
+                errorAlert.setContentText(resources.getString("extended_gamma_not_installed_content"));
                 errorAlert.showAndWait();
             }
         }

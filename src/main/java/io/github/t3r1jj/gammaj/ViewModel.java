@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2016 Damian Terlecki.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,14 +26,14 @@ import io.github.t3r1jj.gammaj.model.Display;
 import io.github.t3r1jj.gammaj.model.DisplayUtility;
 import io.github.t3r1jj.gammaj.model.Gamma;
 import io.github.t3r1jj.gammaj.model.MultiDisplay;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -42,8 +42,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleSetProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
@@ -52,7 +50,7 @@ import javafx.stage.StageStyle;
 
 public class ViewModel {
 
-    private static final ViewModel instance = new ViewModel();
+    private static ViewModel instance;
     private final ListProperty<ColorProfile> loadedProfiles = new SimpleListProperty<>(new ObservableListWrapper<>(new ArrayList<ColorProfile>()));
     private final List<Display> displays = new ArrayList<>();
     private final SetProperty<Gamma.Channel> selectedChannels = new SimpleSetProperty();
@@ -64,8 +62,10 @@ public class ViewModel {
     private final BooleanProperty reset = new SimpleBooleanProperty(true);
     private final BooleanProperty isSrgb = new SimpleBooleanProperty(false);
     private final Configuration configuration = new Configuration();
+    private final ResourceBundle resources;
 
     private ViewModel() {
+        this.resources = ResourceBundle.getBundle("bundles/LangBundle");
         configuration.load();
         selectedChannels.set(FXCollections.observableSet(Gamma.Channel.values()));
         loadFileProfiles();
@@ -80,18 +80,14 @@ public class ViewModel {
             displays.addAll(singleDisplays);
             displays.add(multiDisplay);
         }
-        detachDisplay.addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean nowDetach) {
-                if (nowDetach) {
-                    multiDisplay.detachDisplays();
-                } else {
-                    multiDisplay.attachDisplays();
-                }
-                configuration.setIsDisplaysDetached(nowDetach);
-                configuration.save();
+        detachDisplay.addListener((observable, oldValue, nowDetach) -> {
+            if (nowDetach) {
+                multiDisplay.detachDisplays();
+            } else {
+                multiDisplay.attachDisplays();
             }
+            configuration.setIsDisplaysDetached(nowDetach);
+            configuration.save();
         });
         currentDisplay.set(singleDisplays.get(0));
         if (configuration.isDisplaysDetached()) {
@@ -122,17 +118,14 @@ public class ViewModel {
     }
 
     public static ViewModel getInstance() {
+        if (instance == null) {
+            instance = new ViewModel();
+        }
         return instance;
     }
 
     private void loadFileProfiles() {
-        File[] colorProfileProperties = new File(".").listFiles(new FileFilter() {
-
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.getAbsolutePath().endsWith(".properties");
-            }
-        });
+        File[] colorProfileProperties = new File(".").listFiles(pathname -> pathname.getAbsolutePath().endsWith(".properties"));
 
         StringBuilder errorBuilder = new StringBuilder();
         for (File file : colorProfileProperties) {
@@ -151,9 +144,9 @@ public class ViewModel {
             errorBuilder.append(".");
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
             errorAlert.initStyle(StageStyle.UTILITY);
-            errorAlert.setTitle("Profile loading error");
+            errorAlert.setTitle(resources.getString("profile_loading_error"));
             errorAlert.setHeaderText(null);
-            errorAlert.setContentText("Could not load color profiles: " + errorBuilder.toString());
+            errorAlert.setContentText(resources.getString("profile_loading_error_message") + ": " + errorBuilder.toString());
             errorAlert.showAndWait();
         }
     }
@@ -174,7 +167,7 @@ public class ViewModel {
 
             @Override
             public String toString() {
-                return "Reset (Application hotkey)";
+                return "Reset (App hotkey)";
             }
 
         });
@@ -203,9 +196,9 @@ public class ViewModel {
             errorBuilder.append(".");
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
             errorAlert.initStyle(StageStyle.UTILITY);
-            errorAlert.setTitle("Hotkey registration error");
+            errorAlert.setTitle(resources.getString("hotkey_registration_error"));
             errorAlert.setHeaderText(null);
-            errorAlert.setContentText("Could not register hotkey for profiles: " + errorBuilder.toString());
+            errorAlert.setContentText(resources.getString("hotkey_registration_error_message") +": " + errorBuilder.toString());
             errorAlert.showAndWait();
         }
     }
