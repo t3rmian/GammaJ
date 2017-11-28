@@ -47,13 +47,12 @@ public class GammaJ extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         stage.getIcons().add(new Image(this.getClass().getClassLoader().getResourceAsStream(appIconPath)));
-        trayManager = new TrayManager(stage, appIconPath, viewModel);
         ResourceBundle resources = ResourceBundle.getBundle("bundles/LangBundle");
         FXMLLoader fXMLLoader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"), resources);
-        fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayManager, viewModel));
         Parent root = null;
         try {
             viewModel = ViewModel.getInstance();
+            fXMLLoader.setControllerFactory(new ApplicationControllerFactory(getHostServices(), trayManager, viewModel));
             root = fXMLLoader.load();
         } catch (UnsatisfiedLinkError | GammaWinapiCallException exception) {
             JOptionPane.showConfirmDialog(null, resources.getString("initialization_error_message"),
@@ -61,6 +60,7 @@ public class GammaJ extends Application {
             Platform.exit();
             System.exit(1);
         }
+        trayManager = new TrayManager(stage, appIconPath, viewModel);
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
 
